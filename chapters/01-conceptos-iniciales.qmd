@@ -1,0 +1,494 @@
+---
+title: "Conceptos Iniciales"
+---
+
+> *Estado: portado 2026-05-18. Revisión editorial: pendiente.*
+
+## Objetivos de aprendizaje {.unnumbered}
+
+- **Definir** qué es la econometría y distinguirla de un modelo puramente teórico.
+- **Identificar** las dos componentes de un modelo econométrico —parte sistemática y término de error— y reconocer los parámetros desconocidos $\beta_0, \beta_1, \ldots$
+- **Explicar** por qué correlación no implica causalidad y **diagnosticar** sesgo de selección y sesgo de variable omitida en ejemplos aplicados.
+- **Distinguir** los tres grandes diseños empíricos en economía: experimentos aleatorizados, cuasi-experimentos y datos observacionales.
+- **Clasificar** un conjunto de datos económicos como de corte transversal, de series temporales, de panel o panel agrupado.
+- **Explorar** un conjunto de datos en R con `str()`, `summary()`, `head()`, `hist()`, `plot()` y `tapply()`, y **calcular** medias condicionales para detectar asociaciones brutas.
+
+## Pregunta motivadora {.unnumbered}
+
+> *¿Asistir a la universidad **causa** mayores salarios, o las personas que de todos modos habrían ganado más tienden a ir a la universidad?*
+
+A lo largo del curso veremos que responder a esta pregunta —y a muchas otras del mismo tipo— exige algo más que una simple correlación entre nivel educativo y salario. Hace falta un **modelo**, una **muestra** y, sobre todo, un **diseño** que nos permita atribuir las diferencias observadas a la causa que nos interesa.
+
+## 1.1 ¿Qué es la Econometría?
+
+La **econometría** es la aplicación de métodos estadísticos a datos económicos con el fin de dar contenido empírico a las relaciones económicas. Su objetivo principal es la **estimación** y **contraste** de relaciones entre variables económicas. Algunos ejemplos típicos:
+
+- Educación $\Rightarrow$ Salario
+- Asistencia a clase $\Rightarrow$ Nota final
+- Tasas de matrícula $\Rightarrow$ Inscripción
+- Renta $\Rightarrow$ Felicidad
+- Gasto público en seguridad $\Rightarrow$ Criminalidad
+- Publicidad $\Rightarrow$ Ventas
+
+En general nos referimos a estas variables como $X \Rightarrow Y$, donde $X$ es la **variable independiente** (también llamada regresora o explicativa) e $Y$ es la **variable dependiente** (también respuesta o resultado). Frente a cualquier relación de este tipo surgen dos preguntas fundamentales:
+
+1. ¿**Existe** un efecto de $X$ sobre $Y$?
+2. ¿Cuál es la **magnitud** del efecto?
+
+:::{.callout-note}
+## Decisores y preguntas de «¿cuánto?»
+
+Cada día, quienes toman decisiones se enfrentan a preguntas cuantitativas:
+
+- Un ayuntamiento se plantea cuánto se reducirá el crimen violento si se destina un millón de euros adicional a poner más policías en la calle.
+- El propietario de una pizzería local debe decidir cuánto invertir en publicidad digital y, por tanto, necesita estimar la relación entre publicidad y ventas.
+- Una universidad privada en Andalucía necesita estimar en cuánto disminuirá la matrícula si sube la tasa anual 300 euros.
+
+La econometría es la caja de herramientas para responder este tipo de preguntas con datos [@wooldridge2020].
+:::
+
+## 1.2 El modelo econométrico
+
+El modelo econométrico consta de **dos componentes**:
+
+1. **La parte sistemática**: el comportamiento medio de muchos individuos, empresas u observaciones.
+2. **El error aleatorio** $u$: recoge todos los factores que afectan a $Y$ y que se han omitido en la especificación.
+
+:::{.callout-note}
+## Ejemplo: determinación del salario
+
+Algunos factores asociados al salario por hora de un individuo son la edad, el género, la experiencia y la educación:
+$$
+\text{Salario} = f(\text{Edad},\ \text{Género},\ \text{Experiencia},\ \text{Educación}) + u
+$$
+Una especificación **lineal** sería:
+$$
+\text{Salario} = \beta_0 + \beta_1\,\text{Edad} + \beta_2\,\text{Género} + \beta_3\,\text{Experiencia} + \beta_4\,\text{Educación} + u
+$$
+Los coeficientes $\beta_0, \beta_1, \ldots, \beta_4$ son **parámetros desconocidos** que queremos estimar a partir de una muestra de datos y de una técnica econométrica (por ejemplo, Mínimos Cuadrados Ordinarios; véase el Capítulo 2).
+:::
+
+Dos observaciones importantes:
+
+- La **forma funcional** (lineal, log-lineal, cuadrática, …) representa una hipótesis sobre la relación entre variables. En cada problema, uno de los retos consiste en elegir una forma funcional compatible con la teoría económica y con los datos.
+- El error $u$ **no es observable**. Cuando estimamos el modelo en una muestra, obtenemos los **residuos** $\hat{u}_i = y_i - \hat{y}_i$, que son la versión muestral —y observable— del error poblacional.
+
+## 1.3 Usos de la econometría
+
+El modelo econométrico cumple tres grandes funciones, que conviene distinguir desde el principio:
+
+- **Contrastar teorías e hipótesis económicas**. Por ejemplo: ¿reduce el empleo un aumento del salario mínimo?
+- **Predecir variables económicas**. Por ejemplo: pronosticar el crecimiento del PIB o el precio de las acciones de una empresa.
+- **Estimar relaciones causales**. Por ejemplo: ¿un año adicional de educación **causa** un salario más alto, ceteris paribus?
+
+El tercer punto pertenece a lo que se conoce como la **Revolución de la Credibilidad** en economía empírica, que enfatiza la importancia de identificar efectos causales en lugar de limitarse a constatar correlaciones [@cgl2017]. Las técnicas que veremos en los capítulos siguientes —MCO, controles, variables instrumentales (en cursos posteriores), diferencias-en-diferencias— son herramientas para acercarnos a ese objetivo.
+
+## 1.4 Correlación no implica causalidad
+
+Una de las lecciones más importantes de la econometría es que **correlación no implica causalidad**. Que dos variables se muevan juntas no significa que una cause la otra. Veamos por qué.
+
+### 1.4.1 Sesgo de selección
+
+:::{.callout-note}
+## Ejemplo: ventiladores y mortalidad
+
+Un hospital quiere saber si los respiradores mecánicos salvan vidas. Una comparación ingenua muestra que los pacientes que reciben respirador mueren **más** que los pacientes que no lo reciben. ¿Deberíamos concluir que los respiradores matan?
+
+Por supuesto que no. El problema es el **sesgo de selección**: los pacientes más graves reciben respirador precisamente porque están en peor estado. Esos pacientes habrían tenido mayor mortalidad **independientemente** de si se les hubiera conectado o no a un respirador.
+
+La correlación entre uso del respirador y muerte es *positiva*, pero el verdadero efecto causal es *negativo* (los respiradores salvan vidas). La comparación ingenua confunde el efecto del tratamiento con las características de quien lo recibe.
+:::
+
+:::{.callout-warning}
+## Error frecuente
+
+Comparar las medias de $Y$ entre quienes reciben un tratamiento y quienes no lo reciben **no estima el efecto causal** del tratamiento, salvo que la asignación al tratamiento sea independiente de los demás determinantes de $Y$. Esta independencia raramente se da en datos observacionales.
+:::
+
+### 1.4.2 Sesgo de variable omitida
+
+:::{.callout-note}
+## Ejemplo: helados y ahogamientos
+
+Los datos muestran una fuerte correlación positiva entre las ventas de helados y los ahogamientos. ¿Deberíamos prohibir los helados para reducir las muertes por ahogamiento?
+
+Obviamente no. La **variable omitida** es la temperatura. El calor causa *a la vez* más ventas de helados *y* más baños en piscinas y playas (y, por tanto, más ahogamientos). Sin controlar por la temperatura, la correlación entre helados y ahogamientos es completamente engañosa: es una **correlación espuria**.
+:::
+
+Formalmente, hablamos de **sesgo de variable omitida (SVO)** cuando una variable $Z$ que (i) afecta a $Y$ y (ii) está correlacionada con $X$ se deja fuera del modelo. La estimación de $\beta_1$ —el efecto de $X$ sobre $Y$— absorbe parte del efecto de $Z$. Volveremos sobre esto con detalle en el Capítulo 3.
+
+### 1.4.3 Por qué la aleatorización resuelve el problema
+
+Si asignamos **aleatoriamente** individuos a un grupo de **tratamiento** y otro de **control**, ambos grupos tendrán, en media, las mismas características —observables y no observables— *antes* del tratamiento. Cualquier diferencia en los resultados *después* del tratamiento puede entonces atribuirse al tratamiento mismo.
+
+Volviendo al ejemplo de los respiradores: si pudiéramos asignar respiradores al azar (no en función de la gravedad), los grupos de tratamiento y control tendrían la misma gravedad media. La diferencia de mortalidad sería una estimación **insesgada** del efecto causal del respirador.
+
+Por esta razón, los **Ensayos Controlados Aleatorizados (ECA)** son el «estándar de oro» para establecer relaciones de causalidad.
+
+:::{.callout-note}
+## Ejemplo: escuelas privadas y notas en pruebas estandarizadas
+
+Un estudio observa que los estudiantes de escuelas privadas obtienen mejores notas en pruebas estandarizadas. ¿Podemos concluir que las escuelas privadas **causan** un mejor rendimiento?
+
+No: los estudiantes de escuelas privadas suelen proceder de familias con más recursos en el hogar (libros, apoyo, expectativas, redes). Estamos de nuevo ante un sesgo de selección: la «asignación» a la escuela privada no es aleatoria.
+:::
+
+## 1.5 Tipos de experimentos
+
+La forma en que se generan los datos determina hasta qué punto podemos hablar de causalidad. Conviene distinguir tres grandes diseños empíricos.
+
+### 1.5.1 Experimentos aleatorizados
+
+Un **experimento aleatorizado** asigna a los participantes a uno o varios grupos mediante un mecanismo aleatorio (un sorteo, una tabla de números aleatorios, etc.). Uno de los grupos recibe la intervención —el **tratamiento**— y otro sirve como **grupo de control** (placebo o práctica habitual). La aleatorización garantiza, en media, la **comparabilidad** entre grupos y permite inferencia causal directa.
+
+Sin embargo, este tipo de experimentos es **poco frecuente** en economía y en ciencias sociales por dos razones principales:
+
+- **Razones éticas**: no se puede asignar al azar a una persona a vivir en pobreza, a no recibir tratamiento médico o a cursar una educación de peor calidad.
+- **Coste y financiación**: los ECA son caros y logísticamente complejos.
+
+Existen, no obstante, ejemplos célebres: el experimento RAND de seguro de salud en Estados Unidos, los programas de transferencias condicionadas tipo *PROGRESA/Oportunidades* en México, o las evaluaciones de microcréditos del J-PAL.
+
+### 1.5.2 Cuasi-experimentos
+
+Con datos **cuasi-experimentales**, la asignación al grupo de tratamiento y al de control **no** es aleatoria, sino que depende de algún criterio **observable** (un umbral administrativo, una regla geográfica, una fecha de corte). Cuando ese criterio es exógeno respecto del resultado de interés, el cuasi-experimento puede aproximarse a un experimento puro.
+
+:::{.callout-note}
+## Ejemplo: confinamientos por umbral de contagio
+
+Durante la pandemia de COVID-19, la Junta de Andalucía impuso confinamientos perimetrales (tratamiento) únicamente a los municipios con una tasa de contagio superior a 1.000 casos por cada 100.000 habitantes:
+
+- **Grupo de tratamiento**: municipios con tasa por encima de 1.000.
+- **Grupo de control**: municipios con tasa por debajo de 1.000.
+
+Comparando municipios «justo por encima» y «justo por debajo» del umbral, es plausible que ambos grupos sean similares en todo lo demás y que las diferencias en, por ejemplo, movilidad o actividad económica reflejen el efecto causal del confinamiento.
+:::
+
+Otros diseños cuasi-experimentales habituales son **diferencias-en-diferencias**, **regresión discontinua** y **variables instrumentales** (se estudian en cursos posteriores).
+
+### 1.5.3 Datos no experimentales (observacionales)
+
+En los datos **no experimentales** —típicamente encuestas— todas las variables se observan simultáneamente y la asignación a «grupos» no obedece a un diseño explícito: cada agente «se selecciona» en función de sus propias circunstancias. Son los datos más abundantes en economía aplicada.
+
+Ejemplos en España:
+
+- La **Encuesta de Población Activa (EPA)** del INE: principal fuente sobre el mercado laboral; ofrece datos trimestrales sobre empleo, paro y población activa.
+- La **Encuesta Nacional de Salud (ENSE)**: información sanitaria sobre miles de hogares residentes en España.
+- La **Encuesta de Condiciones de Vida (ECV)**.
+
+Con datos observacionales **podemos estimar correlaciones**, pero la interpretación causal exige supuestos adicionales (controlar por confusores observables, instrumentos válidos, diseños cuasi-experimentales, etc.). Esto explica por qué buena parte de la econometría moderna se dedica a **identificar** efectos causales en datos que no proceden de un experimento.
+
+## 1.6 Tipos de datos económicos
+
+Los datos económicos se presentan en varias formas. Una primera distinción útil es entre el **nivel de agregación** (datos micro frente a datos macro) y la **naturaleza de las variables**:
+
+- **Cuantitativas**: expresadas como números (salarios, ventas, PIB).
+- **Cualitativas**: expresan una situación o categoría (sí/no, sector, región). En el modelo de regresión se incorporan habitualmente como **variables ficticias**.
+
+Una segunda distinción —la que más nos ocupará— se refiere a la **estructura temporal** de los datos.
+
+:::{.callout-note}
+## Datos de corte transversal
+
+Datos recogidos sobre **unidades muestrales** (individuos, hogares, empresas, municipios, países) en un **único período**. El orden de las observaciones no contiene información: podemos reordenar las filas sin perder nada.
+
+*Ejemplo:* La **Encuesta Nacional de Salud de España 2017** recoge información sanitaria sobre 23.860 hogares en un único año.
+:::
+
+:::{.callout-note}
+## Series temporales
+
+Datos recogidos a **intervalos regulares** de tiempo, donde se registra la misma magnitud económica.
+
+*Ejemplos:* el precio anual del trigo, la tasa de paro mensual, las cotizaciones diarias del IBEX-35.
+:::
+
+:::{.callout-note}
+## Datos de panel (longitudinales)
+
+Datos sobre **micro-unidades individuales** que se observan a lo largo de **varios períodos**. El rasgo clave es que observamos *cada* micro-unidad en múltiples instantes de tiempo. Si todas las unidades se observan el mismo número de períodos, el panel es **balanceado**.
+
+*Ejemplo:* 1.000 empresas seguidas durante 2010-2024, registrando ventas, empleo y exportaciones de cada empresa en cada año.
+:::
+
+:::{.callout-note}
+## Panel agrupado (*pooled cross-section*)
+
+Conjunto formado por la **unión de varias secciones cruzadas** independientes, recogidas en distintos períodos. **No** se siguen las mismas unidades: cada período aporta una muestra nueva. Permite analizar cambios poblacionales a lo largo del tiempo aunque no permite seguir trayectorias individuales.
+
+*Ejemplo:* unir varias olas de la EPA, donde cada trimestre se extrae una muestra fresca de hogares.
+:::
+
+:::{.callout-warning}
+## Error frecuente
+
+No confundir **panel** con **panel agrupado**: la diferencia clave es si las **mismas** unidades se siguen a lo largo del tiempo (panel) o si se extraen **muestras nuevas** en cada período (panel agrupado).
+:::
+
+## 1.7 Práctica: exploración de datos económicos en R
+
+En esta práctica usaremos el conjunto de datos `wage1` del paquete `wooldridge`, que contiene información de 526 trabajadores estadounidenses en mayo de 1976 (corte transversal). El objetivo es **explorar** los datos antes de cualquier modelización: calcular medias y medianas, visualizar distribuciones y obtener **medias condicionales** que ilustren —pero no demuestren— posibles relaciones.
+
+Si es la primera vez que se usa el paquete `wooldridge`, hay que instalarlo desde la consola de R con `install.packages("wooldridge")`. La instalación se hace **una sola vez**; cargar el paquete con `library()` se hace en cada sesión.
+
+```{r}
+#| message: false
+#| warning: false
+library(wooldridge)
+data("wage1")
+```
+
+### Estructura del conjunto de datos
+
+```{r}
+str(wage1)
+```
+
+Cada fila representa **un trabajador** observado **una sola vez** en mayo de 1976. No hay índice temporal ni identificadores individuales repetidos: estamos ante un **corte transversal**, no un panel.
+
+### Estadísticas descriptivas
+
+```{r}
+summary(wage1[, c("wage", "educ", "exper", "tenure")])
+```
+
+Las variables principales son:
+
+- `wage`: salario por hora en dólares de 1976.
+- `educ`: años de educación.
+- `exper`: años de experiencia laboral potencial.
+- `tenure`: años de antigüedad en el empleo actual.
+
+```{r}
+head(wage1[, c("wage", "educ", "exper", "female", "married")])
+```
+
+### Distribuciones
+
+```{r}
+#| fig-cap: "Distribución del salario por hora (USD)."
+hist(wage1$wage,
+     breaks = 30, col = "lightblue",
+     main = "Distribución del salario por hora",
+     xlab = "Salario (USD/h)")
+```
+
+La distribución del salario es claramente **asimétrica a la derecha**: la media (aproximadamente 5,90 USD/h) es mayor que la mediana (4,65 USD/h), lo que indica una cola larga de salarios altos. Es un patrón habitual en datos de renta y salarios.
+
+```{r}
+#| fig-cap: "Distribución de los años de educación."
+hist(wage1$educ,
+     breaks = 18, col = "lightgreen",
+     main = "Años de educación",
+     xlab = "Años de educación")
+```
+
+### Diagrama de dispersión: salario frente a educación
+
+```{r}
+#| fig-cap: "Salario por hora frente a años de educación. La línea roja es el ajuste por MCO."
+plot(wage1$educ, wage1$wage,
+     pch = 16, col = rgb(0, 0, 1, 0.3),
+     xlab = "Años de educación",
+     ylab = "Salario por hora (USD)",
+     main = "Salario vs. educación")
+abline(lm(wage ~ educ, data = wage1), col = "red", lwd = 2)
+```
+
+```{r}
+cor(wage1$wage, wage1$educ)
+```
+
+La correlación entre salario y educación es aproximadamente **0,41**: positiva, como esperaríamos. Pero conviene ser cauto en la interpretación:
+
+1. La nube muestra **heterocedasticidad**: la varianza del salario es mucho mayor para niveles altos de educación que para niveles bajos (volveremos sobre esto en el Capítulo 7).
+2. La correlación **no es** el efecto causal de la educación sobre el salario. Las personas con más años de estudios difieren en habilidad innata, motivación, origen familiar y muchas otras dimensiones que también están en $u$.
+
+### Medias condicionales
+
+Una forma rápida de detectar asociaciones brutas es calcular la **media de $Y$ por grupos** definidos por una variable categórica. En R lo hacemos con `tapply()`.
+
+```{r}
+# Salario medio por género (female = 1 si mujer)
+tapply(wage1$wage, wage1$female, mean)
+```
+
+```{r}
+# Salario medio por estado civil
+tapply(wage1$wage, wage1$married, mean)
+```
+
+```{r}
+# Salario medio por intervalos de educación
+wage1$educ_grupo <- cut(wage1$educ,
+                        breaks = c(-1, 8, 12, 16, 18),
+                        labels = c("Hasta 8", "9-12", "13-16", "17+"))
+tapply(wage1$wage, wage1$educ_grupo, mean)
+```
+
+Estos números son **medias condicionales**, no efectos causales. La brecha salarial bruta entre hombres y mujeres (aproximadamente 7,10 vs. 4,59 USD/h) refleja diferencias en ocupación, experiencia, sector, horas, decisiones de fecundidad, posible discriminación, etc. Para interpretarlas como efectos *ceteris paribus* necesitaremos una **regresión múltiple** que mantenga fijos los confusores observables (Capítulo 3).
+
+:::{.callout-tip collapse="true"}
+## Pista: ¿qué pasa si estimamos un MCO simple aquí?
+
+Es perfectamente posible escribir `summary(lm(wage ~ educ, data = wage1))` ahora mismo. Pero la interpretación del coeficiente como «retorno causal de un año de educación» exige supuestos fuertes (no SVO, no sesgo de selección). En el Capítulo 2 estimaremos este modelo con cuidado; en el Capítulo 3 introduciremos controles.
+:::
+
+## Auto-evaluación {.unnumbered}
+
+Ocho preguntas breves de opción múltiple. Intenta responder cada una antes de desplegar la solución.
+
+::: {.callout-tip collapse="true"}
+## Q1. ¿Qué es un modelo econométrico?
+
+Un modelo econométrico se diferencia de un modelo económico puramente teórico en que:
+
+- A. Supone que la relación entre variables es exacta y determinista.
+- B. Añade un término de error estocástico y una forma funcional, de modo que los parámetros desconocidos puedan estimarse a partir de datos.
+- C. No necesita una muestra de datos porque los parámetros se derivan de la teoría.
+- D. Solo se utiliza en problemas macroeconómicos, no en microeconómicos.
+
+**Respuesta: B.** Un modelo econométrico combina una forma funcional con una perturbación aleatoria $u$, lo que permite estimar los parámetros desconocidos a partir de los datos observados.
+:::
+
+::: {.callout-tip collapse="true"}
+## Q2. El papel del término de error
+
+En el modelo de regresión poblacional $y = \beta_0 + \beta_1 x + u$, el término de error $u$:
+
+- A. Es la diferencia entre $y_i$ y el valor ajustado por MCO $\hat{y}_i$ en nuestra muestra.
+- B. Es siempre igual a cero en la población.
+- C. Recoge todos los factores —distintos de $x$— que influyen sobre $y$.
+- D. Es observable tan pronto como disponemos de datos de $y$ y $x$.
+
+**Respuesta: C.** $u$ es una magnitud *poblacional* y *no observable* que agrupa todos los determinantes omitidos de $y$. El residuo $\hat{u}_i$ es su análogo muestral, calculado solo tras la estimación.
+:::
+
+::: {.callout-tip collapse="true"}
+## Q3. ¿Corte transversal o no?
+
+Un conjunto de datos con información sobre 526 trabajadores entrevistados en mayo de 1976 (una observación por trabajador, todos medidos en el mismo instante) es:
+
+- A. Datos de corte transversal.
+- B. Datos de series temporales.
+- C. Datos de panel (longitudinales).
+- D. Panel agrupado.
+
+**Respuesta: A.** Muchas unidades, un único período, sin observaciones repetidas de la misma unidad: la definición estándar de corte transversal.
+:::
+
+::: {.callout-tip collapse="true"}
+## Q4. Series temporales
+
+Las tasas anuales de paro en España de 1980 a 2024 son un ejemplo de:
+
+- A. Datos de corte transversal.
+- B. Datos de series temporales.
+- C. Datos de panel.
+- D. Datos experimentales.
+
+**Respuesta: B.** Una única magnitud (la tasa de paro) registrada a una frecuencia regular en el tiempo.
+:::
+
+::: {.callout-tip collapse="true"}
+## Q5. Panel frente a panel agrupado
+
+Una base de datos sigue a 1.000 empresas durante los años 2010-2024, registrando las ventas, el empleo y las exportaciones de cada empresa en cada año. Esto es:
+
+- A. Datos de corte transversal, ya que cada fila es un par empresa-año.
+- B. Panel agrupado, ya que se muestrean unidades distintas en cada período.
+- C. Datos de series temporales, ya que tiene una dimensión temporal.
+- D. Datos de panel (longitudinales): las mismas unidades observadas repetidamente a lo largo del tiempo.
+
+**Respuesta: D.** Las mismas empresas se siguen a lo largo de varios períodos, que es exactamente la estructura de panel.
+:::
+
+::: {.callout-tip collapse="true"}
+## Q6. ¿Qué nos dice la correlación?
+
+Una correlación positiva alta entre dos variables $X$ e $Y$ implica que:
+
+- A. $X$ causa $Y$.
+- B. $Y$ causa $X$.
+- C. Existe una relación lineal determinista entre ambas.
+- D. Tienden a moverse juntas, pero esta asociación puede deberse a una tercera variable, a causalidad inversa o a sesgo de selección.
+
+**Respuesta: D.** La correlación no dice nada sobre la dirección causal ni sobre la presencia de confusores. El ejemplo de los helados y los ahogamientos del §1.4.2 es la advertencia canónica.
+:::
+
+::: {.callout-tip collapse="true"}
+## Q7. Sesgo de selección
+
+El sesgo de selección aparece cuando:
+
+- A. Las unidades que se «seleccionan» en el grupo de tratamiento difieren sistemáticamente de las que no, incluso antes del tratamiento.
+- B. El investigador elige los regresores en función de los estadísticos $t$.
+- C. El tamaño muestral es demasiado pequeño para detectar un efecto verdadero.
+- D. La variable dependiente se mide con error.
+
+**Respuesta: A.** El sesgo de selección es una propiedad de la *asignación* del tratamiento, no de la estimación ni de la medición. El ejemplo de los respiradores del §1.4.1 es el prototipo.
+:::
+
+::: {.callout-tip collapse="true"}
+## Q8. La aleatorización como remedio
+
+¿En cuál de los siguientes diseños la aleatorización elimina *por construcción* el sesgo de selección?
+
+- A. Comparar individuos empleados frente a desempleados utilizando datos de encuesta de corte transversal.
+- B. Un Ensayo Controlado Aleatorizado (ECA) en el que el tratamiento se asigna por sorteo.
+- C. Comparar estudiantes que eligieron matricularse en una escuela privada frente a una pública.
+- D. Comparar países que adoptaron el euro frente a países que no lo hicieron.
+
+**Respuesta: B.** Solo la asignación aleatoria garantiza que, *en media*, las unidades tratadas y no tratadas tengan las mismas características previas al tratamiento.
+:::
+
+## Ejercicios {.unnumbered}
+
+**Ejercicio 1.1 ★ --- Clasificación de conjuntos de datos.** Clasifique cada uno de los siguientes conjuntos de datos como corte transversal, serie temporal, panel o panel agrupado.
+
+(a) IPC mensual español de 1980 a 2024.
+(b) `wage1`: 526 trabajadores entrevistados en mayo de 1976, una fila por trabajador.
+(c) La EPA española: cada trimestre se extrae una muestra independiente nueva de hogares (no se vuelve a entrevistar a ningún hogar); después se apilan varios trimestres.
+(d) Un conjunto de datos que sigue a los mismos 800 estudiantes desde los 6 hasta los 18 años, registrando sus puntuaciones cada año.
+
+::: {.callout-tip collapse="true"}
+## Mostrar solución
+
+(a) Serie temporal. (b) Corte transversal. (c) Panel agrupado --- unidades nuevas en cada período. (d) Panel: las *mismas* unidades se siguen a lo largo de varios períodos.
+:::
+
+**Ejercicio 1.2 ★ --- Detectar sesgo de selección.** Para cada escenario, indique si el sesgo de selección es un problema probable e identifique qué característica lo origina.
+
+(a) Un hospital compara la mortalidad de los pacientes que recibieron respirador con la de los pacientes que no lo recibieron.
+(b) Un economista compara los salarios de los trabajadores que completaron un programa de formación laboral con los salarios de los trabajadores que no se inscribieron.
+(c) Unos investigadores comparan los países que adoptaron el euro en 1999 con los países que no lo hicieron.
+
+::: {.callout-tip collapse="true"}
+## Mostrar solución
+
+(a) Sí --- la gravedad de la enfermedad determina tanto la asignación del respirador como la mortalidad. (b) Sí --- la autoselección hacia la formación viene impulsada por la motivación, los ingresos previos y las perspectivas en el mercado laboral, todo lo cual también afecta al salario. (c) Sí --- los países que se unieron al euro fueron elegidos en función de fundamentos macroeconómicos (los criterios de Maastricht), por lo que no son una muestra aleatoria de países europeos.
+:::
+
+**Ejercicio 1.3 ★★ --- Signo del sesgo de variable omitida.** Suponga que regresa el salario por hora sobre los años de educación en una muestra de adultos actualmente empleados, *sin* controlar por la habilidad innata. Suponga que (i) los trabajadores más hábiles ganan más, manteniendo fija la educación, y (ii) los trabajadores más hábiles tienden a adquirir más educación. ¿Estará el coeficiente de `educ` sesgado al alza (demasiado positivo) o a la baja (demasiado negativo)? Explique en una frase.
+
+*La solución completa se ofrece en la Edición del Profesor.*
+
+**Ejercicio 1.4 ★★ --- Diseño de un experimento aleatorizado.** Desea saber si un curso gratuito de preparación para la universidad (el tratamiento) eleva causalmente la probabilidad de que los estudiantes de secundaria de familias con renta baja se matriculen en la universidad. Esboce el diseño de un experimento aleatorizado que permita identificar este efecto causal. Sea explícito en cuanto a: la población, la regla de asignación, los grupos de tratamiento y control, la variable de resultado y el horizonte temporal. Discuta brevemente una objeción ética que su diseño deberá abordar.
+
+*La solución completa se ofrece en la Edición del Profesor.*
+
+**Ejercicio 1.5 ★★ --- Un modelo ingenuo con variable omitida.** El salario de un trabajador se genera mediante
+
+$$
+w = 5 + 2 \cdot \mathit{edu} + u, \qquad \mathbb{E}[u] = 0,\ \operatorname{Var}(u) = 1,
+$$
+
+donde $\mathit{edu}\in\{0,1,2,3\}$ son los años de educación postobligatoria. Suponga que la habilidad (recogida en $u$) está correlacionada con la educación: $\mathbb{E}[u\mid \mathit{edu}] = 0{,}5\cdot \mathit{edu}$.
+
+(a) Calcule $\mathbb{E}[w\mid \mathit{edu}]$.
+(b) Si ingenuamente suponemos $\mathbb{E}[u\mid \mathit{edu}] = 0$ y leemos la pendiente, ¿qué obtenemos? ¿En cuánto nos *desviamos* del verdadero efecto marginal de un año adicional de educación?
+
+*La solución completa se ofrece en la Edición del Profesor.*
+
+**Ejercicio 1.6 ★★★ --- Chocolate y premios Nobel.** Se ha documentado [@cgl2017] que los países con mayor consumo de chocolate per cápita también ganan más premios Nobel per cápita. ¿Es esto evidencia de que el consumo de chocolate *causa* premios Nobel? Identifique (i) al menos una variable omitida plausible, (ii) al menos un canal causal alternativo (causalidad inversa, selección de los países que se miden, etc.) y (iii) describa un diseño de investigación *hipotético* --- experimental o cuasi-experimental --- que le permitiera conocer el efecto causal del chocolate sobre la obtención de premios. Sea sincero respecto a por qué es poco probable que este diseño sea factible.
+
+*La solución completa se ofrece en la Edición del Profesor.*

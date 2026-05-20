@@ -1,0 +1,152 @@
+---
+title: "Tablas estadísticas"
+---
+
+> *Estado: portado 2026-05-18. Las tablas se generan reproduciblemente desde funciones de distribución de R, salvo las cotas de Durbin-Watson (Durbin y Watson 1951).*
+
+Este apéndice reúne los **valores críticos** de las cuatro distribuciones que aparecen en los contrastes del libro: la $t$ de Student (Cap. 4, contrastes sobre un coeficiente), la $F$ de Snedecor (Cap. 4, restricciones múltiples; Cap. 7, Breusch–Pagan), la $\chi^2$ (Cap. 7 y 8, contrastes de heterocedasticidad y autocorrelación) y las cotas de Durbin–Watson (Cap. 8). Las tablas se generan en el momento, llamando a `qt()`, `qf()` y `qchisq()` sobre los grados de libertad estándar, de modo que son exactas hasta la precisión de máquina —a diferencia de las tablas impresas, que suelen redondear al cuarto decimal.
+
+## Cómo leer estas tablas {.unnumbered}
+
+Cada tabla devuelve, para unos **grados de libertad (gl)** dados y un **nivel de significación** $\alpha$, el **valor crítico** $c_\alpha$: el percentil de la distribución de referencia que deja a su derecha una probabilidad $\alpha$. La regla práctica del contraste es entonces inmediata: se rechaza $H_0$ cuando el estadístico observado supera $c_\alpha$ (en valor absoluto, si el contraste es bilateral). El **$p$-valor**, por su parte, invierte la pregunta: dado un estadístico observado $\hat{s}$, ¿qué probabilidad hay, bajo $H_0$, de observar algo tan extremo o más? Si $p < \alpha$, se rechaza $H_0$.
+
+La distinción **unilateral vs bilateral** solo afecta a la $t$ (la $F$ y la $\chi^2$ son por construcción de una sola cola, la derecha). Las columnas de la Tabla C.1 están etiquetadas con $\alpha$ **unilateral**: para un contraste bilateral al $5\%$, hay que leer la columna $\alpha = 0{,}025$. Como referencia: $t_{\infty,\,0{,}025} = 1{,}96$ (el famoso valor crítico bilateral al $5\%$), y $t_{\infty,\,0{,}05} = 1{,}645$ (unilateral al $5\%$).
+
+## C.1 Valores críticos de la distribución $t$
+
+La Tabla C.1 da los valores críticos $t_{\text{gl},\,\alpha}$ tales que $P(T > t_{\text{gl},\,\alpha}) = \alpha$, con $T \sim t_{\text{gl}}$. Para un contraste **bilateral** al nivel $\alpha$, úsese la columna $\alpha/2$.
+
+```{r}
+#| message: false
+#| warning: false
+gl_t <- c(1:30, 40, 60, 90, 120, Inf)
+alpha_t <- c(0.10, 0.05, 0.025, 0.01, 0.005, 0.001)
+
+tabla_t <- outer(gl_t, alpha_t, function(g, a) qt(1 - a, df = g))
+tabla_t <- as.data.frame(tabla_t)
+colnames(tabla_t) <- paste0("α = ", format(alpha_t, decimal.mark = ","))
+rownames(tabla_t) <- ifelse(is.infinite(gl_t), "∞", as.character(gl_t))
+
+knitr::kable(
+  tabla_t,
+  digits = 3,
+  caption = "Valores críticos de la distribución $t$ (cola derecha, unilateral).",
+  format.args = list(decimal.mark = ",")
+)
+```
+
+## C.2 Valores críticos de la distribución $F$
+
+La Tabla C.2 ($\alpha = 0{,}05$) y la Tabla C.3 ($\alpha = 0{,}01$) recogen los valores críticos $F_{q_1,\,q_2,\,\alpha}$ tales que $P(F > F_{q_1,\,q_2,\,\alpha}) = \alpha$, con $F \sim F_{q_1,\,q_2}$. En las filas, los **grados de libertad del denominador** $q_2$; en las columnas, los del **numerador** $q_1$.
+
+```{r}
+gl_num <- c(1, 2, 3, 4, 5, 6, 7, 8, 10, 15, 20, 30)
+gl_den <- c(10, 15, 20, 25, 30, 40, 60, 120, Inf)
+
+tabla_F_05 <- outer(gl_den, gl_num,
+                    function(d, n) qf(0.95, df1 = n, df2 = d))
+tabla_F_05 <- as.data.frame(tabla_F_05)
+colnames(tabla_F_05) <- as.character(gl_num)
+rownames(tabla_F_05) <- ifelse(is.infinite(gl_den), "∞", as.character(gl_den))
+
+knitr::kable(
+  tabla_F_05,
+  digits = 2,
+  caption = "Valores críticos de la $F$ al $5\\%$ ($\\alpha = 0{,}05$). Filas: gl denominador; columnas: gl numerador.",
+  format.args = list(decimal.mark = ",")
+)
+```
+
+```{r}
+tabla_F_01 <- outer(gl_den, gl_num,
+                    function(d, n) qf(0.99, df1 = n, df2 = d))
+tabla_F_01 <- as.data.frame(tabla_F_01)
+colnames(tabla_F_01) <- as.character(gl_num)
+rownames(tabla_F_01) <- ifelse(is.infinite(gl_den), "∞", as.character(gl_den))
+
+knitr::kable(
+  tabla_F_01,
+  digits = 2,
+  caption = "Valores críticos de la $F$ al $1\\%$ ($\\alpha = 0{,}01$). Filas: gl denominador; columnas: gl numerador.",
+  format.args = list(decimal.mark = ",")
+)
+```
+
+:::{.callout-note}
+## ¿Por qué la $F$ no tiene cola izquierda?
+
+El estadístico $F$ de un contraste de restricciones múltiples se construye como el cociente entre la **mejora del ajuste** al relajar las restricciones y la varianza residual del modelo no restringido. Bajo $H_0$, ese cociente debería ser próximo a 1; solo valores **grandes** son evidencia contra $H_0$. Por eso los valores críticos viven siempre en la cola derecha.
+:::
+
+## C.3 Valores críticos de la $\chi^2$
+
+La Tabla C.4 da los valores críticos $\chi^2_{\text{gl},\,\alpha}$ tales que $P(W > \chi^2_{\text{gl},\,\alpha}) = \alpha$, con $W \sim \chi^2_{\text{gl}}$. Los contrastes del Capítulo 7 (Breusch–Pagan, White) y del Capítulo 8 (Breusch–Godfrey) emplean estos valores.
+
+```{r}
+gl_chi <- c(1:10, 15, 20, 30, 50, 100)
+alpha_chi <- c(0.10, 0.05, 0.025, 0.01, 0.005)
+
+tabla_chi <- outer(gl_chi, alpha_chi,
+                   function(g, a) qchisq(1 - a, df = g))
+tabla_chi <- as.data.frame(tabla_chi)
+colnames(tabla_chi) <- paste0("α = ", format(alpha_chi, decimal.mark = ","))
+rownames(tabla_chi) <- as.character(gl_chi)
+
+knitr::kable(
+  tabla_chi,
+  digits = 3,
+  caption = "Valores críticos de la $\\chi^2$ (cola derecha).",
+  format.args = list(decimal.mark = ",")
+)
+```
+
+## C.4 Cotas de Durbin–Watson
+
+El estadístico de Durbin–Watson $d$ contrasta $H_0$: no autocorrelación de primer orden en los errores. Su distribución exacta depende de la matriz de regresoras, por lo que @durbin1951testing tabularon **cotas** $d_L$ y $d_U$ que delimitan tres regiones: rechazo, no rechazo e inconcluso. La Tabla C.5 reproduce las cotas al $5\%$ para $k'$ regresores (sin contar la constante) y tamaños muestrales $n$ habituales.
+
+```{r}
+dw <- data.frame(
+  n  = c(15, 20, 25, 30, 40, 50, 75, 100, 150, 200),
+  dL_k1 = c(1.08, 1.20, 1.29, 1.35, 1.44, 1.50, 1.60, 1.65, 1.72, 1.76),
+  dU_k1 = c(1.36, 1.41, 1.45, 1.49, 1.54, 1.59, 1.65, 1.69, 1.75, 1.78),
+  dL_k2 = c(0.95, 1.10, 1.21, 1.28, 1.39, 1.46, 1.57, 1.63, 1.71, 1.75),
+  dU_k2 = c(1.54, 1.54, 1.55, 1.57, 1.60, 1.63, 1.68, 1.72, 1.76, 1.79),
+  dL_k3 = c(0.82, 1.00, 1.12, 1.21, 1.34, 1.42, 1.54, 1.61, 1.69, 1.74),
+  dU_k3 = c(1.75, 1.68, 1.66, 1.65, 1.66, 1.67, 1.71, 1.74, 1.77, 1.80),
+  dL_k4 = c(0.69, 0.90, 1.04, 1.14, 1.29, 1.38, 1.51, 1.59, 1.68, 1.73),
+  dU_k4 = c(1.97, 1.83, 1.77, 1.74, 1.72, 1.72, 1.74, 1.76, 1.79, 1.81),
+  dL_k5 = c(0.56, 0.79, 0.95, 1.07, 1.23, 1.34, 1.49, 1.57, 1.67, 1.72),
+  dU_k5 = c(2.21, 1.99, 1.89, 1.83, 1.79, 1.77, 1.77, 1.78, 1.80, 1.82)
+)
+
+colnames(dw) <- c(
+  "n",
+  "k'=1 d_L", "k'=1 d_U",
+  "k'=2 d_L", "k'=2 d_U",
+  "k'=3 d_L", "k'=3 d_U",
+  "k'=4 d_L", "k'=4 d_U",
+  "k'=5 d_L", "k'=5 d_U"
+)
+
+knitr::kable(
+  dw,
+  digits = 2,
+  row.names = FALSE,
+  caption = "Cotas de Durbin–Watson al $5\\%$. $k'$: número de regresores excluyendo la constante. Fuente: @durbin1951testing.",
+  format.args = list(decimal.mark = ",")
+)
+```
+
+:::{.callout-note}
+## Regla de decisión del contraste de Durbin–Watson
+
+Sea $d$ el estadístico observado. Las cotas $d_L$ y $d_U$ delimitan cinco regiones:
+
+- $0 < d < d_L$: se **rechaza** $H_0$; evidencia de **autocorrelación positiva**.
+- $d_L \leq d \leq d_U$: zona **inconcluyente**; el contraste no decide.
+- $d_U < d < 4 - d_U$: **no se rechaza** $H_0$; no hay evidencia de autocorrelación.
+- $4 - d_U \leq d \leq 4 - d_L$: zona **inconcluyente**.
+- $4 - d_L < d < 4$: se **rechaza** $H_0$; evidencia de **autocorrelación negativa**.
+
+Como referencia, $d = 2$ corresponde exactamente a ausencia de correlación serial muestral. Si el contraste cae en la zona inconcluyente, en el Capítulo 8 se recurre al contraste **Breusch–Godfrey**, que sí da una decisión clara y admite regresoras endógenas retardadas.
+:::

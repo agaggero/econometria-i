@@ -1,0 +1,81 @@
+project:
+  type: book
+  output-dir: _output
+
+book:
+  title: "Econometría I"
+  subtitle: "Teoría, práctica y aplicaciones"
+  author: "Alessio Gaggero"
+  date: today
+  language: es
+  description: |
+    Libro de texto abierto para Econometría I en la Universidad
+    de Granada. Combina apuntes de clase, prácticas en R y
+    auto-evaluaciones interactivas en un único volumen reproducible.
+
+  chapters:
+    - index.qmd
+    - chapters/01-conceptos-iniciales.qmd
+    - chapters/02-regresion-simple.qmd
+    - chapters/03-regresion-multiple.qmd
+    - chapters/04-inferencia.qmd
+    - chapters/05-prediccion.qmd
+    - chapters/06-no-lineal-cualitativa.qmd
+    - chapters/07-heterocedasticidad.qmd
+    - chapters/08-autocorrelacion.qmd
+
+  appendices:
+    - chapters/apendice-a-prerrequisitos.qmd
+    - chapters/apendice-b-crosswalk-wooldridge-cgl.qmd
+    - chapters/apendice-c-tablas.qmd
+
+format:
+  html:
+    theme:
+      light: cosmo
+      dark: darkly
+    number-sections: true
+    toc: true
+    toc-depth: 3
+    code-fold: show
+    code-tools: true
+    mathjax: true
+    fig-align: center
+
+  pdf:
+    documentclass: scrbook
+    papersize: a4
+    geometry:
+      - margin=2.5cm
+    number-sections: true
+    toc: true
+    toc-depth: 2
+    fig-align: center
+    keep-tex: true
+    include-in-header:
+      text: |
+        \usepackage[spanish]{babel}
+        \usepackage{booktabs}
+        \usepackage{amsmath,amssymb,amsthm,mathtools}
+        \usepackage{bm}
+
+  epub:
+    toc: true
+    toc-depth: 2
+
+bibliography: references.bib
+
+license: "CC BY 4.0"
+
+execute:
+  echo: true
+  warning: false
+  message: false
+  freeze: auto
+
+knitr:
+  opts_chunk:
+    fig.width: 7
+    fig.height: 5
+    fig.align: center
+    comment: ""

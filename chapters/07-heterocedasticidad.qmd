@@ -1,0 +1,514 @@
+---
+title: "Heterocedasticidad"
+---
+
+> *Estado: portado 2026-05-18. Revisión editorial: pendiente. Prosa recuperada de la versión inglesa (G4).*
+
+## Objetivos {.unnumbered}
+
+Al finalizar este capítulo el lector debería ser capaz de:
+
+- Enunciar el supuesto de homocedasticidad RLM.5 en la notación de Wooldridge y reconocer cuándo es probable que falle en datos de sección cruzada.
+- Explicar por qué la heterocedasticidad deja a MCO insesgado y consistente, pero destruye su eficiencia e invalida los errores estándar, los contrastes $t$ y los contrastes $F$ habituales.
+- Detectar la heterocedasticidad de manera informal con gráficos de residuos y de manera formal con los tests de Goldfeld--Quandt y Breusch--Pagan.
+- Corregir la heterocedasticidad mediante Mínimos Cuadrados Ponderados (MCP) cuando la forma de la varianza condicional es conocida.
+- Calcular y reportar errores estándar robustos a la heterocedasticidad (White / HC1) cuando la forma es desconocida.
+- Construir una tabla comparativa de errores estándar MCO frente a errores estándar robustos e interpretar el cociente entre ellos.
+
+## Pregunta motivadora {.unnumbered}
+
+> *¿Por qué los intervalos de confianza MCO convencionales subestiman la incertidumbre real en una regresión salarial donde los salarios altos están muy dispersos --- y qué deberíamos hacer al respecto?*
+
+Una regresión del salario por hora sobre los años de educación entrega una estimación puntual limpia del rendimiento de la escolarización. Pero la dispersión de los salarios alrededor de la recta de regresión **no** es la misma para quienes abandonan la secundaria y para los doctorados: los graduados se reparten en un rango salarial mucho más amplio. La fórmula MCO de manual para el error estándar de $\hat\beta_1$ supone que la dispersión es constante. Cuando no lo es, los errores estándar reportados son incorrectos, los estadísticos $t$ son incorrectos y las recomendaciones de política construidas sobre ellos son incorrectas. Este capítulo muestra cómo diagnosticar el problema y cómo arreglarlo.
+
+## 7.1 Introducción
+
+En el Capítulo 4 enumeramos los supuestos RLM.1--RLM.6 del modelo de regresión lineal múltiple que justifican MCO. El supuesto de **homocedasticidad** RLM.5 establece que la varianza del error es la misma para cualquier valor de los regresores:
+
+$$
+\operatorname{Var}(u_i \mid \mathbf{x}_i) \;=\; \sigma^2, \qquad i = 1, \dots, n.
+$$
+
+Cuando RLM.5 falla, la varianza condicional depende de $\mathbf{x}_i$:
+
+$$
+\operatorname{Var}(u_i \mid \mathbf{x}_i) \;=\; \sigma_i^2,
+$$
+
+y se dice que el error es **heterocedástico**. La raíz griega ayuda a recordarlo: *homo-cedástico* significa «misma dispersión»; *hetero-cedástico* significa «dispersión distinta».
+
+::: {.callout-note}
+## Ejemplo: variabilidad salarial y educación
+
+Los trabajadores con solo educación primaria en un mercado laboral europeo típico ganan entre aproximadamente 15.000 y 25.000 euros anuales --- un rango estrecho. Los graduados universitarios ganan entre 20.000 y 200.000 euros --- un rango mucho más amplio. La varianza condicional de los salarios crece claramente con la educación. El término de error en una ecuación salarial $\text{salario}_i = \beta_0 + \beta_1\,\text{educ}_i + u_i$ exhibe por tanto heterocedasticidad: $\operatorname{Var}(u_i \mid \text{educ}_i)$ crece con `educ`.
+:::
+
+La heterocedasticidad **no** es un problema de identificación. Mientras se mantenga $\mathbb{E}[u_i \mid \mathbf{x}_i] = 0$ (supuesto RLM.4), el *significado* de $\beta_j$ como efecto *ceteris paribus* sobrevive. Lo que la heterocedasticidad rompe es la **inferencia** --- la maquinaria que convierte una estimación puntual $\hat\beta_j$ en un intervalo de confianza o un contraste de hipótesis.
+
+::: {.callout-warning}
+## Error frecuente: confundir heterocedasticidad con sesgo por omisión de variables
+
+La heterocedasticidad afecta a $\operatorname{Var}(u_i \mid \mathbf{x}_i)$; el sesgo por omisión de variables afecta a $\mathbb{E}[u_i \mid \mathbf{x}_i]$. El primero deja $\hat\beta_j$ insesgado y solo daña los errores estándar. El segundo sesga el propio $\hat\beta_j$. Los dos problemas requieren herramientas distintas, y un mismo conjunto de datos puede sufrir uno, otro, ambos o ninguno.
+:::
+
+::: {.callout-note}
+## Dónde aparece típicamente la heterocedasticidad
+
+La heterocedasticidad es **la regla, no la excepción**, en los datos microeconómicos de sección cruzada, al menos por tres razones:
+
+- **Efectos de escala.** Las unidades más grandes tienen más espacio para variar. El gasto de las empresas grandes varía más en términos absolutos que el de las pequeñas.
+- **Resultados discretos y acotados.** Una variable dependiente binaria tiene mecánicamente $\operatorname{Var}(y \mid \mathbf{x}) = p(\mathbf{x})\bigl[1 - p(\mathbf{x})\bigr]$, que no es constante.
+- **Agregación.** Las medias calculadas sobre grupos de distinto tamaño tienen varianzas proporcionales a $1/n_g$, generando heterocedasticidad por construcción.
+
+Estas son precisamente las estructuras de datos con las que trabajan los economistas aplicados, lo que explica por qué los errores estándar robustos se han convertido en la práctica por defecto en la econometría moderna.
+:::
+
+## 7.2 Consecuencias de la heterocedasticidad
+
+Supongamos que RLM.1--RLM.4 se mantienen y que solo RLM.5 falla. Tres enunciados resumen las consecuencias:
+
+1. **MCO sigue siendo insesgado y consistente.** La insesgadez de $\hat\beta_j$ requiere solamente RLM.1--RLM.4. La heterocedasticidad no entra en la demostración.
+2. **MCO ya no es ELIO.** El teorema de Gauss--Markov requiere homocedasticidad. Bajo heterocedasticidad, *otros* estimadores lineales e insesgados pueden tener varianza menor que MCO. Veremos uno de ellos, MCP, en el §7.4.
+3. **Los errores estándar MCO habituales son incorrectos.** La fórmula de manual $\widehat{\operatorname{Var}}(\hat\beta_j) = \hat\sigma^2 (\mathbf{X}'\mathbf{X})^{-1}_{jj}$ supone que la matriz de varianzas y covarianzas del error es $\sigma^2 \mathbf{I}_n$. Cuando no lo es, esta fórmula es sesgada --- típicamente hacia abajo, de modo que los errores estándar MCO son *demasiado pequeños* y los estadísticos $t$ *demasiado grandes*. Los intervalos de confianza son por tanto demasiado estrechos y los $p$-valores demasiado pequeños: rechazamos la hipótesis nula con más frecuencia de la que deberíamos.
+
+::: {.callout-note}
+## La varianza correcta (sándwich) bajo heterocedasticidad
+
+Si recogemos las varianzas condicionales en la diagonal de una matriz $\boldsymbol{\Omega} = \operatorname{diag}(\sigma_1^2, \dots, \sigma_n^2)$, la varianza condicional *correcta* del estimador MCO es
+
+$$
+\operatorname{Var}(\hat{\boldsymbol\beta} \mid \mathbf{X}) \;=\; (\mathbf{X}'\mathbf{X})^{-1}\,\mathbf{X}'\boldsymbol{\Omega}\mathbf{X}\,(\mathbf{X}'\mathbf{X})^{-1}.
+$$
+
+El «pan» $(\mathbf{X}'\mathbf{X})^{-1}$ rodea a la «carne» $\mathbf{X}'\boldsymbol{\Omega}\mathbf{X}$ --- y por eso esta forma se conoce universalmente como estimador **sándwich**. La fórmula MCO habitual simplemente sustituye $\boldsymbol{\Omega}$ por $\sigma^2 \mathbf{I}_n$ y colapsa el sándwich en una sola loncha. El estimador White / HC1 que usamos en el §7.4 estima $\boldsymbol{\Omega}$ por $\operatorname{diag}(\hat u_1^2, \dots, \hat u_n^2)$, con una corrección de grados de libertad para muestras finitas.
+:::
+
+En resumen: la heterocedasticidad es un problema de los *errores estándar*, no de los *coeficientes*. La solución pasa por reparar la maquinaria inferencial (errores estándar robustos) o, si nos podemos permitir el modelado adicional, por usar un estimador que explote la estructura de varianzas (MCP).
+
+## 7.3 Detección de la heterocedasticidad
+
+Describimos un diagnóstico informal y dos contrastes formales. El gráfico informal es barato y debería ser lo primero que se mira; los contrastes formales proporcionan una regla de decisión estructurada.
+
+### 7.3.1 Detección informal: gráficos de residuos
+
+Después de estimar el modelo por MCO, se calculan los residuos $\hat u_i = y_i - \hat y_i$ y se representan frente a los valores ajustados $\hat y_i$ o frente a cada regresor $x_j$. La huella visual de la heterocedasticidad es una forma de **abanico** o **cuña**: la dispersión vertical de la nube de residuos se ensancha (o se estrecha) a medida que avanzamos por el eje horizontal. Los residuos al cuadrado $\hat u_i^2$ frente a $x_j$ hacen el patrón aún más obvio, porque ya no importa el signo del residuo.
+
+Si la nube parece una banda horizontal de espesor aproximadamente constante, la homocedasticidad es plausible. Si se abre --- como típicamente ocurre cuando $x_j$ es renta, tamaño de la empresa o cualquier otra variable de «escala» --- la heterocedasticidad es la sospechosa natural.
+
+### 7.3.2 El test de Goldfeld--Quandt
+
+El test de Goldfeld--Quandt (GQ) es apropiado cuando se sospecha que la heterocedasticidad está impulsada por **un** regresor concreto. La idea es simple: dividir la muestra en un grupo de $x$ bajo y un grupo de $x$ alto, y comparar las varianzas residuales de las dos submuestras.
+
+**Pasos.**
+
+1. Ordenar las observaciones por la variable sospechosa $x$.
+2. Opcionalmente, descartar las $m$ observaciones centrales (a menudo $m \approx n/3$) para acentuar el contraste.
+3. Estimar el modelo por separado en el grupo bajo (submuestra 1) y en el grupo alto (submuestra 2). Obtener las sumas de cuadrados de los residuos $\operatorname{SCR}_1$ y $\operatorname{SCR}_2$, con grados de libertad $\operatorname{gl}_1$ y $\operatorname{gl}_2$.
+4. Calcular
+
+$$
+F \;=\; \frac{\operatorname{SCR}_2 \,/\, \operatorname{gl}_2}{\operatorname{SCR}_1 \,/\, \operatorname{gl}_1}\;\sim\;F_{\operatorname{gl}_2,\,\operatorname{gl}_1} \quad \text{bajo } H_0.
+$$
+
+**Hipótesis.** $H_0$: homocedasticidad. $H_1$: $\operatorname{Var}(u)$ crece con $x$ (la alternativa más habitual). Se rechaza $H_0$ cuando $F$ excede el valor crítico de la cola superior de la distribución $F$.
+
+El test GQ fue históricamente popular en muestras pequeñas y resulta intuitivo, pero exige al analista *comprometerse* con una única variable de ordenación y con una regla de partición de la muestra. El test de Breusch--Pagan, que presentamos a continuación, prescinde de ambos compromisos.
+
+### 7.3.3 El test de Breusch--Pagan
+
+El test de Breusch--Pagan (BP) detecta heterocedasticidad relacionada con **cualquiera** de los regresores. Es el contraste formal de cabecera en el trabajo aplicado moderno.
+
+**Pasos.**
+
+1. Estimar el modelo original por MCO y guardar los residuos $\hat u_i$.
+2. Correr la **regresión auxiliar** de los residuos al cuadrado sobre todos los regresores originales:
+
+$$
+\hat u_i^2 \;=\; \gamma_0 + \gamma_1 x_{1i} + \gamma_2 x_{2i} + \dots + \gamma_k x_{ki} + v_i.
+$$
+
+3. Calcular el estadístico BP
+
+$$
+\operatorname{BP} \;=\; n \cdot R^2_{\text{aux}} \;\sim\;\chi^2_{k}\quad\text{bajo } H_0,
+$$
+
+donde $R^2_{\text{aux}}$ es el coeficiente de determinación de la regresión auxiliar y $k$ es el número de coeficientes pendiente de esa regresión.
+
+**Hipótesis.** $H_0: \gamma_1 = \gamma_2 = \dots = \gamma_k = 0$ (homocedasticidad). Se rechaza cuando $\operatorname{BP} > \chi^2_{k,\alpha}$.
+
+La intuición es directa: si el residuo al cuadrado se explica *sistemáticamente* por los regresores, entonces $\operatorname{Var}(u \mid \mathbf{x})$ varía con $\mathbf{x}$, que es la definición de heterocedasticidad. Un primo cercano --- el **test de White** --- añade cuadrados y productos cruzados de los regresores a la regresión auxiliar y detecta así formas más generales de heterocedasticidad, a costa de grados de libertad.
+
+::: {.callout-warning}
+## Error frecuente: encadenar tests hasta que uno rechace
+
+No conviene ejecutar GQ, luego BP, luego White, y reportar el que rechaza «primero». Es una forma de $p$-hacking. Elige un test basándote en lo que sospechas *antes* de mirar los residuos, o --- siguiendo la práctica moderna --- omite directamente la fase de contraste y reporta errores estándar robustos por defecto.
+:::
+
+## 7.4 Soluciones
+
+Existen dos soluciones principales, adaptadas a dos estados distintos del conocimiento.
+
+### 7.4.1 Mínimos Cuadrados Ponderados (MCP)
+
+Supongamos que conocemos (o estamos dispuestos a modelar) la forma de la varianza condicional:
+
+$$
+\operatorname{Var}(u_i \mid \mathbf{x}_i) \;=\; \sigma^2 \, h(\mathbf{x}_i),
+$$
+
+donde $h(\mathbf{x}_i) > 0$ es una función conocida de los regresores. Un ejemplo típico es $h(\mathbf{x}_i) = x_i$ cuando la varianza es proporcional a una variable de escala como la renta.
+
+Dividamos cada término de la regresión por $\sqrt{h(\mathbf{x}_i)}$:
+
+$$
+\frac{y_i}{\sqrt{h(\mathbf{x}_i)}} \;=\; \beta_0 \frac{1}{\sqrt{h(\mathbf{x}_i)}} + \beta_1 \frac{x_{i}}{\sqrt{h(\mathbf{x}_i)}} + \frac{u_i}{\sqrt{h(\mathbf{x}_i)}}.
+$$
+
+El nuevo error $u_i^\ast = u_i / \sqrt{h(\mathbf{x}_i)}$ tiene varianza constante:
+
+$$
+\operatorname{Var}(u_i^\ast) \;=\; \frac{\sigma^2 h(\mathbf{x}_i)}{h(\mathbf{x}_i)} \;=\; \sigma^2.
+$$
+
+Aplicar MCO al modelo transformado equivale a aplicar **mínimos cuadrados ponderados**: minimizar
+
+$$
+\sum_{i=1}^{n} \frac{1}{h(\mathbf{x}_i)} \bigl(y_i - \beta_0 - \beta_1 x_{i} - \dots\bigr)^2.
+$$
+
+Cada observación recibe un peso $w_i = 1 / h(\mathbf{x}_i)$. Las observaciones con varianza alta reciben *menos* peso; las observaciones con varianza baja reciben *más*. Cuando los pesos están correctamente especificados, MCP es ELIO: tiene menor varianza que MCO sin dejar de ser insesgado.
+
+::: {.callout-warning}
+## Error frecuente: forzar MCP cuando no se conoce $h(\mathbf{x})$
+
+MCP solo es ELIO bajo pesos *correctamente especificados*. Con pesos equivocados puede ser *menos* eficiente que MCO, y sus errores estándar vuelven a ser incorrectos. Si solo se tiene una idea vaga de la estructura de varianzas, conviene preferir errores estándar robustos.
+:::
+
+### 7.4.2 Errores estándar robustos a la heterocedasticidad
+
+Cuando se desconoce la forma de $h(\mathbf{x})$, la solución más segura es mantener MCO para las estimaciones puntuales y calcular **errores estándar consistentes a la heterocedasticidad (HC)**, también llamados **robustos** o **de White**, en honor a [@white1980].
+
+En el caso de regresión simple, con $\hat u_i$ el residuo MCO,
+
+$$
+\operatorname{ee}_{\text{robusto}}(\hat\beta_1) \;=\; \sqrt{\,\dfrac{\displaystyle\sum_{i=1}^{n} (x_i - \bar x)^2 \,\hat u_i^2}{\Bigl[\displaystyle\sum_{i=1}^{n} (x_i - \bar x)^2\Bigr]^2}\,}.
+$$
+
+La expresión matricial general es el estimador sándwich del §7.2 con $\boldsymbol{\Omega}$ reemplazada por $\operatorname{diag}(\hat u_1^2, \dots, \hat u_n^2)$. Existen varias variantes (HC0, HC1, HC2, HC3) que difieren en su corrección de grados de libertad para muestras finitas; **HC1** es la opción por defecto de la orden `, robust` de Stata y es la habitual en el trabajo aplicado publicado.
+
+Los errores estándar robustos dejan inalteradas las estimaciones puntuales $\hat\beta_j$. Solo se corrige la varianza --- y por tanto los estadísticos $t$, los $p$-valores y los intervalos de confianza.
+
+::: {.callout-note}
+## Cuándo usar cada cosa
+
+- **Estructura de varianzas conocida y fiable** $\Rightarrow$ MCP (ELIO, errores estándar menores).
+- **Estructura de varianzas desconocida** $\Rightarrow$ MCO con errores estándar robustos (coeficientes insesgados, inferencia válida, errores estándar mayores).
+- **En la duda** $\Rightarrow$ reportar errores estándar robustos. En la econometría aplicada moderna, los errores estándar robustos se han convertido en la opción por defecto, no en un plan B. Muchas revistas los esperan por construcción.
+:::
+
+## 7.5 Práctica: Heterocedasticidad en R
+
+Esta práctica corresponde a la Práctica 8 del curso. El conjunto de datos `het_datos.xlsx` es una sección cruzada propia de consumo y renta a nivel de hogar, dividida en tres tramos de renta (`grupo` $\in \{1, 2, 3\}$, de bajo a alto). Estimamos una regresión simple de tipo curva de Engel del consumo sobre la renta, detectamos heterocedasticidad y a continuación la corregimos por dos vías --- primero por MCP y después con errores estándar robustos.
+
+Usamos tres paquetes: `readxl` para leer el fichero Excel, `lmtest` para los tests de Breusch--Pagan y Goldfeld--Quandt y para `coeftest()`, y `sandwich` para la matriz de varianzas--covarianzas robusta.
+
+```{r ch07-setup}
+#| message: false
+#| warning: false
+library(readxl)
+library(lmtest)
+library(sandwich)
+```
+
+### Carga de los datos
+
+La práctica original utiliza una ruta relativa (`read_excel("het_datos.xlsx")`) tras hacer `setwd()` en la carpeta de la Práctica 8. Para que el libro sea portable mantenemos ese estilo pero documentamos la ruta absoluta utilizada en tiempo de compilación. Adapta la ruta a tu equipo.
+
+```{r ch07-load}
+#| eval: true
+het_path <- file.path(
+  "..", "..", "..", "..", "SPANISH", "Practicas", "2025", "Tutorial 8", "het_datos.xlsx"
+)
+het_datos <- read_excel(het_path)
+
+# Construimos un indicador de tercil de renta para la división de Goldfeld-Quandt:
+# grupo == 1 = tercio bajo, 2 = tercio medio, 3 = tercio alto.
+het_datos$grupo <- as.integer(cut(het_datos$renta,
+                                  breaks = quantile(het_datos$renta,
+                                                    probs = c(0, 1/3, 2/3, 1)),
+                                  include.lowest = TRUE))
+str(het_datos)
+head(het_datos)
+```
+
+El xlsx original incluye `renta` y `consumo`. Añadimos una variable derivada `grupo` igual al tercil de la renta (1 = bajo, 2 = medio, 3 = alto) para que el test de Goldfeld--Quandt pueda dividir la muestra a continuación.
+
+### Paso 1. MCO de referencia y gráfico de residuos
+
+```{r ch07-ols}
+modelo1 <- lm(consumo ~ renta, data = het_datos)
+summary(modelo1)
+```
+
+El coeficiente pendiente $\hat\beta_1$ es la propensión marginal media a consumir sobre la renta. Para comprobar la homocedasticidad de forma informal, representamos los residuos MCO frente a `renta`:
+
+```{r ch07-resid-plot}
+#| fig-cap: "Residuos de consumo ~ renta frente a renta. Una nube que se ensancha sugiere heterocedasticidad."
+plot(het_datos$renta, resid(modelo1),
+     xlab = "Renta",
+     ylab = "Residuos",
+     main = "Residuos frente a renta",
+     pch  = 16,
+     col  = rgb(0, 0, 1, 0.4))
+abline(h = 0, lty = 2, col = "red")
+```
+
+La nube se abre al crecer la renta: los residuos forman un abanico. Es exactamente la forma de cuña que avisamos en el §7.3.1.
+
+### Paso 2. Test de Goldfeld--Quandt a mano
+
+Estimamos el modelo por separado en las submuestras de renta baja (`grupo == 1`) y de renta alta (`grupo == 3`), y comparamos las dos varianzas residuales.
+
+```{r ch07-gq}
+modelo_bajo <- lm(consumo ~ renta, data = het_datos, subset = grupo == 1)
+modelo_alto <- lm(consumo ~ renta, data = het_datos, subset = grupo == 3)
+
+SCR_bajo <- sum(residuals(modelo_bajo)^2)
+SCR_alto <- sum(residuals(modelo_alto)^2)
+
+n_bajo <- nobs(modelo_bajo)
+n_alto <- nobs(modelo_alto)
+k      <- length(coef(modelo_bajo))     # constante + pendiente
+
+gl_bajo <- n_bajo - k
+gl_alto <- n_alto - k
+
+F_GQ   <- (SCR_alto / gl_alto) / (SCR_bajo / gl_bajo)
+F_crit <- qf(0.95, gl_alto, gl_bajo)
+p_gq   <- 1 - pf(F_GQ, gl_alto, gl_bajo)
+
+c(F = F_GQ, F_crit_5pct = F_crit, p_valor = p_gq)
+```
+
+Si `F_GQ` está bastante por encima de `F_crit_5pct` --- o, equivalentemente, si el $p$-valor está por debajo de $0{,}05$ --- rechazamos la homocedasticidad en favor de «la varianza crece con la renta».
+
+### Paso 3. Test de Breusch--Pagan (a mano y con `bptest()`)
+
+La regresión auxiliar de los residuos al cuadrado sobre la renta nos da $R^2_{\text{aux}}$; el estadístico BP es $n \cdot R^2_{\text{aux}}$ y sigue una $\chi^2_1$ bajo $H_0$ (hay un único regresor, `renta`).
+
+```{r ch07-bp-manual}
+res    <- residuals(modelo1)
+res_sq <- res^2
+aux    <- lm(res_sq ~ renta, data = het_datos)
+
+n        <- nobs(modelo1)
+R2_aux   <- summary(aux)$r.squared
+BP_stat  <- n * R2_aux
+chi_crit <- qchisq(0.95, df = 1)
+p_bp     <- 1 - pchisq(BP_stat, df = 1)
+
+c(BP_manual = BP_stat, chi2_1_5pct = chi_crit, p_valor = p_bp)
+```
+
+La versión del paquete entrega la misma respuesta en una línea:
+
+```{r ch07-bp-package}
+bptest(modelo1)
+```
+
+Un $p$-valor pequeño (por debajo de $0{,}05$) significa que rechazamos la homocedasticidad. Los dos cálculos deberían coincidir salvo redondeo.
+
+### Paso 4. Corrección por MCP
+
+Supongamos $\operatorname{Var}(u_i \mid \text{renta}_i) \propto \text{renta}_i$, de modo que $h(\text{renta}_i) = \text{renta}_i$. Los pesos MCP son $w_i = 1 / \text{renta}_i$.
+
+```{r ch07-wls}
+mcp <- lm(consumo ~ renta, data = het_datos, weights = 1 / renta)
+summary(mcp)
+```
+
+Para comprobar si los pesos fueron bien elegidos, repetimos el test de heterocedasticidad sobre el ajuste MCP:
+
+```{r ch07-wls-bp}
+bptest(mcp)
+```
+
+Si el test BP ya no rechaza ($p$-valor grande), la estructura de varianzas supuesta era aproximadamente correcta y MCP ha cumplido su función.
+
+### Paso 5. Errores estándar robustos (HC1)
+
+La solución más segura --- válida incluso cuando no se tiene idea de la forma de $h(\mathbf{x})$ --- consiste en mantener las estimaciones MCO y recalcular los errores estándar con `vcovHC()`:
+
+```{r ch07-robust}
+coeftest(modelo1, vcov = vcovHC(modelo1, type = "HC1"))
+```
+
+Las estimaciones puntuales son idénticas a las de `summary(modelo1)`. Solo cambian los errores estándar, los estadísticos $t$ y los $p$-valores.
+
+### Paso 6. Tabla comparativa: errores MCO frente a robustos
+
+Una forma limpia de comunicar el resultado es poner los dos errores estándar lado a lado y reportar su cociente.
+
+```{r ch07-comparacion}
+ee_ols    <- summary(modelo1)$coefficients[, "Std. Error"]
+ee_robust <- sqrt(diag(vcovHC(modelo1, type = "HC1")))
+
+comparacion <- data.frame(
+  EE_MCO    = round(ee_ols,    4),
+  EE_Robust = round(ee_robust, 4),
+  Ratio     = round(ee_robust / ee_ols, 3)
+)
+comparacion
+```
+
+Si el cociente de la última columna es claramente mayor que $1$, los errores estándar MCO estaban infraestimando la incertidumbre --- exactamente el diagnóstico que dimos en el §7.2.
+
+::: {.callout-note}
+## Leer la tabla comparativa
+
+La finalidad de esta tabla no es «elegir» una columna sobre la otra --- los coeficientes son los mismos en ambas. La tabla indica *cuánto* ha distorsionado la heterocedasticidad al error estándar MCO. Un cociente próximo a $1{,}0$ significa que MCO estaba bien aun cuando RLM.5 técnicamente fallara; un cociente por encima de $1{,}5$ significa que MCO habría llevado a sobre-rechazar la nula. En cualquiera de los dos casos, los errores robustos son ahora la columna estándar a reportar.
+:::
+
+## Auto-evaluación {.unnumbered}
+
+Seis preguntas cortas de opción múltiple. Intenta cada una antes de abrir la respuesta.
+
+::: {.callout-tip collapse="true"}
+## P1. Definición
+
+La heterocedasticidad en un modelo de regresión lineal significa:
+
+- A. $\mathbb{E}[u \mid x] \neq 0$.
+- B. $\operatorname{Var}(u \mid x)$ depende de $x$ --- no es constante.
+- C. El error $u$ está correlacionado entre observaciones.
+- D. $x$ es colineal con otro regresor.
+
+**Respuesta: B.** La heterocedasticidad es, por definición, el fallo de RLM.5: la varianza condicional de $u$ varía con los regresores. Las otras opciones describen RLM.4, autocorrelación y multicolinealidad respectivamente.
+:::
+
+::: {.callout-tip collapse="true"}
+## P2. Consecuencias
+
+Bajo heterocedasticidad (manteniéndose RLM.1--RLM.4), MCO es:
+
+- A. Sesgado en muestras finitas.
+- B. Inconsistente.
+- C. Sigue siendo insesgado y consistente, pero ya no es ELIO, y los errores estándar habituales son incorrectos.
+- D. Sigue siendo ELIO.
+
+**Respuesta: C.** La insesgadez y la consistencia de $\hat\beta_j$ no requieren RLM.5. Sí la requieren la eficiencia (ELIO) y la validez de la fórmula de manual del error estándar.
+:::
+
+::: {.callout-tip collapse="true"}
+## P3. Identificación frente a inferencia
+
+¿Por qué decimos que la heterocedasticidad es un problema de *inferencia* y no de *identificación*?
+
+- A. Porque la heterocedasticidad sesga $\hat\beta_j$ pero deja intactos los errores estándar.
+- B. Porque $\hat\beta_j$ deja de ser consistente para la pendiente poblacional.
+- C. Porque, si RLM.4 sigue manteniéndose, $\hat\beta_j$ continúa estimando el efecto *ceteris paribus*; solo los errores estándar son incorrectos.
+- D. Porque la heterocedasticidad es lo mismo que el sesgo por omisión de variables.
+
+**Respuesta: C.** La interpretación causal de $\hat\beta_j$ sobrevive a la heterocedasticidad. Lo que falla es la maquinaria que convierte la estimación en un contraste $t$ o un intervalo de confianza.
+:::
+
+::: {.callout-tip collapse="true"}
+## P4. Breusch--Pagan
+
+El test de Breusch--Pagan corre una regresión auxiliar de:
+
+- A. $\hat u$ sobre los regresores y usa el estadístico $F$ resultante.
+- B. $\hat u^2$ sobre los regresores y usa $n \cdot R^2$ como un estadístico $\chi^2$.
+- C. $y$ sobre $\hat u^2$ y usa un estadístico $t$.
+- D. $x$ sobre $\hat u$ y usa la pendiente como estadístico de contraste.
+
+**Respuesta: B.** El test BP regresiona los residuos al cuadrado sobre los regresores; bajo $H_0$ de homocedasticidad, $n R^2_{\text{aux}}$ es asintóticamente $\chi^2_k$.
+:::
+
+::: {.callout-tip collapse="true"}
+## P5. Goldfeld--Quandt
+
+El test de Goldfeld--Quandt compara:
+
+- A. Las dos pendientes estimadas.
+- B. Las varianzas residuales de dos submuestras (típicamente valores bajos frente a valores altos de un regresor).
+- C. Los $R^2$ de dos modelos.
+- D. Dos constantes.
+
+**Respuesta: B.** GQ parte la muestra según la variable sospechosa, ajusta la regresión en cada mitad y usa el cociente de las medias de los cuadrados de los residuos como estadístico $F$.
+:::
+
+::: {.callout-tip collapse="true"}
+## P6. MCP frente a errores robustos
+
+¿Cuándo conviene preferir Mínimos Cuadrados Ponderados a MCO con errores estándar robustos?
+
+- A. Cuando la forma de $\operatorname{Var}(u \mid \mathbf{x})$ es conocida y se desea ganar eficiencia.
+- B. Cada vez que el test de Breusch--Pagan rechaza, independientemente de lo que se sepa.
+- C. Cuando la muestra es pequeña y no se pueden calcular errores robustos.
+- D. Nunca --- los errores robustos siempre dominan a MCP.
+
+**Respuesta: A.** MCP solo es ELIO bajo pesos correctamente especificados. Con una estructura de varianzas desconocida, MCO más errores robustos es la opción por defecto más segura; con un modelo creíble para $h(\mathbf{x})$, MCP compra eficiencia.
+:::
+
+## Ejercicios {.unnumbered}
+
+**Ejercicio 7.1 ★ --- Detectar heterocedasticidad.** Para cada una de las siguientes regresiones, predice si el término de error será probablemente heterocedástico y explica el motivo en una frase.
+
+(a) Gasto anual en alimentación regresado sobre la renta del hogar en una muestra de 4.000 hogares.
+(b) Número de hijos regresado sobre la edad de la madre, en una muestra restringida a mujeres de 30--35 años.
+(c) Gasto en I+D a nivel de empresa regresado sobre las ventas de la empresa, en una muestra que mezcla pequeñas *startups* y empresas del Fortune 500.
+(d) Un modelo lineal de probabilidad donde la variable dependiente es un indicador $0/1$ de estar empleado.
+
+::: {.callout-tip collapse="true"}
+## Ver respuesta
+
+(a) Sí --- los hogares más ricos tienen más gasto discrecional y por tanto una variación absoluta más amplia en el gasto en alimentación. (b) Probablemente no de forma marcada --- la muestra es estrecha en edad, así que los efectos de escala son pequeños. (c) Sí, intensamente --- el tamaño de las empresas abarca varios órdenes de magnitud. (d) Sí, por construcción --- $\operatorname{Var}(y \mid \mathbf{x}) = p(\mathbf{x})\bigl[1-p(\mathbf{x})\bigr]$ depende de $\mathbf{x}$ siempre que $p(\mathbf{x})$ dependa de $\mathbf{x}$.
+:::
+
+**Ejercicio 7.2 ★ --- Leer una salida BP.** Un estudiante ejecuta `bptest(lm(consumo ~ renta, data = het_datos))` y obtiene un estadístico de aproximadamente $9{,}8$ con $1$ grado de libertad y $p$-valor $\approx 0{,}002$.
+
+(a) Plantea la hipótesis nula y la alternativa del contraste.
+(b) ¿Cuál es la conclusión al nivel del $5\%$?
+(c) ¿Debería el estudiante (i) mantener los errores estándar MCO, (ii) pasar a errores estándar robustos, o (iii) re-estimar por MCP? Justifica brevemente.
+
+::: {.callout-tip collapse="true"}
+## Ver respuesta
+
+(a) $H_0$: homocedasticidad ($\gamma_1 = 0$ en la regresión auxiliar de $\hat u^2$ sobre la renta); $H_1$: $\operatorname{Var}(u \mid \text{renta})$ depende de la renta. (b) Se rechaza $H_0$ al nivel del $5\%$: el $p$-valor está muy por debajo de $0{,}05$. (c) Como mínimo, pasar a errores estándar robustos (opción ii). MCP (opción iii) es viable *si* el estudiante confía en que la varianza sea proporcional a la renta; en otro caso, la vía robusta es más segura.
+:::
+
+**Ejercicio 7.3 ★★ --- Goldfeld--Quandt a mano.** Supón que para una regresión de consumo sobre renta obtienes $\operatorname{SCR}_{\text{bajo}} = 120$ con $\operatorname{gl}_{\text{bajo}} = 28$ observaciones en la submuestra de renta baja, y $\operatorname{SCR}_{\text{alto}} = 540$ con $\operatorname{gl}_{\text{alto}} = 28$ en la submuestra de renta alta. El valor crítico al $5\%$ de $F_{28,28}$ es aproximadamente $1{,}88$.
+
+(a) Calcula el estadístico $F$ de Goldfeld--Quandt.
+(b) Enuncia tu conclusión al nivel del $5\%$.
+(c) ¿Qué historia económica explicaría un resultado de este tipo?
+
+*La respuesta completa se ofrece en la Edición del Instructor.*
+
+**Ejercicio 7.4 ★★ --- Por qué el sándwich.** Demuestra que bajo homocedasticidad ($\boldsymbol{\Omega} = \sigma^2 \mathbf{I}_n$), la varianza sándwich
+
+$$
+(\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'\boldsymbol{\Omega}\mathbf{X}(\mathbf{X}'\mathbf{X})^{-1}
+$$
+
+se reduce a la varianza MCO habitual $\sigma^2(\mathbf{X}'\mathbf{X})^{-1}$. Usa este resultado para argumentar, en un párrafo, que el error estándar robusto *nunca es peor asintóticamente* que el error estándar MCO.
+
+*La respuesta completa se ofrece en la Edición del Instructor.*
+
+**Ejercicio 7.5 ★★ --- MCP como MCO transformado.** Considera el modelo de regresión simple $y_i = \beta_0 + \beta_1 x_i + u_i$ con $\operatorname{Var}(u_i \mid x_i) = \sigma^2 x_i$ (siendo $x_i > 0$).
+
+(a) Escribe el modelo transformado tras dividir por $\sqrt{x_i}$.
+(b) Demuestra que el error del modelo transformado tiene varianza constante igual a $\sigma^2$.
+(c) Concluye que MCO sobre el modelo transformado es ELIO para $(\beta_0, \beta_1)$, y escribe el criterio MCP equivalente en términos de pesos $w_i$.
+
+*La respuesta completa se ofrece en la Edición del Instructor.*
+
+**Ejercicio 7.6 ★★★ --- Extensión de la práctica.** Usando `het_datos.xlsx` de la Práctica 8:
+
+(a) Reproduce la tabla comparativa de errores estándar MCO y errores robustos HC1. Reporta el cociente para el coeficiente pendiente sobre `renta`.
+(b) Re-estima el modelo por MCP con pesos $w_i = 1/\text{renta}_i^2$ (varianza proporcional a $\text{renta}^2$ en lugar de a $\text{renta}$). Aplica el test BP al ajuste MCP resultante. ¿Funciona este segundo esquema de ponderación mejor que el esquema $w_i = 1/\text{renta}_i$ del §7.5?
+(c) Supón que el test BP sigue rechazando tras aplicar MCP. ¿En cuál de las dos soluciones --- MCP o errores robustos --- conviene confiar más, y por qué?
+
+*La respuesta completa se ofrece en la Edición del Instructor.*

@@ -1,0 +1,559 @@
+---
+title: "Relaciones No Lineales e Información Cualitativa"
+---
+
+> *Estado: portado 2026-05-18. Revisión editorial: pendiente. Capítulo expandido desde la versión inglesa (G3).*
+
+## Objetivos {.unnumbered}
+
+Al terminar este capítulo, el lector debería ser capaz de:
+
+- Reconocer cuándo un modelo lineal en parámetros puede acomodar una relación no lineal en las variables, y elegir entre especificaciones cuadráticas y logarítmicas.
+- Calcular efectos parciales y puntos de inflexión en modelos cuadráticos, y juzgar si el punto crítico es económicamente relevante.
+- Interpretar coeficientes en modelos nivel-nivel, log-nivel, nivel-log y log-log en términos de pendientes, semi-elasticidades y elasticidades.
+- Construir e interpretar términos de interacción, tanto entre dos variables continuas como entre una continua y una ficticia (ficticias de pendiente).
+- Usar variables ficticias para información cualitativa binaria, nominal y ordinal, evitando la trampa de la ficticia.
+- Contrastar un cambio estructural entre dos submuestras mediante el test $F$ de Chow, calculado a mano y vía `anova()`.
+
+## Pregunta motivadora {.unnumbered}
+
+> *¿Cada año adicional de experiencia incrementa siempre los salarios en la misma cuantía? ¿Y el rendimiento de la experiencia, o el de la apariencia, es el mismo para mujeres que para hombres?*
+
+Una regresión lineal del salario sobre la experiencia supone implícitamente que el décimo año de experiencia paga exactamente lo mismo que el primero. El sentido común y décadas de evidencia empírica en economía laboral sugieren lo contrario: el perfil salario-experiencia es *cóncavo*. De manera análoga, un único coeficiente sobre `female` recoge una brecha media en los interceptos pero nada dice acerca de si el *rendimiento* de la experiencia difiere por género. Las herramientas de este capítulo --- cuadráticos, logaritmos, interacciones, ficticias y el test de Chow --- permiten responder preguntas de este tipo sin abandonar MCO.
+
+## 6.1 Relaciones no lineales en un modelo lineal
+
+Muchas relaciones económicas no son líneas rectas. Los rendimientos decrecientes de la experiencia, las curvas de Kuznets en forma de U invertida, las curvas de coste medio en forma de U y las curvas de demanda de elasticidad constante violan todas la linealidad estricta en las variables. Por suerte, el modelo de referencia de este curso solo exige linealidad en los **parámetros**. Una especificación como
+$$
+y = \beta_0 + \beta_1 x + \beta_2 x^2 + \varepsilon
+$$
+es *no lineal* en $x$ pero *lineal* en $\beta_0, \beta_1, \beta_2$, por lo que puede estimarse por MCO exactamente igual que la regresión múltiple del Capítulo 3, sin más que añadir $x^2$ como un regresor adicional. Lo mismo ocurre con $\ln(y)$, $\ln(x)$, $x_1 \cdot x_2$, $1/x$ y cualquier otra transformación de las variables que pueda calcularse antes de correr la regresión.
+
+De aquí se siguen dos lecciones prácticas.
+
+- *La especificación es una decisión de modelización.* La teoría, la evidencia empírica previa y un diagrama de dispersión deben guiar la elección entre una cuadrática, un logaritmo, una interacción o alguna combinación.
+- *La interpretación cambia.* Una vez transformadas las variables, los coeficientes dejan de tener la lectura simple de "incremento de una unidad en $x$". Buena parte del capítulo trata precisamente de fijar esas interpretaciones.
+
+::: {.callout-note}
+## Definición: lineal en parámetros
+
+Un modelo de regresión es *lineal en parámetros* si puede escribirse como $y = \beta_0 + \beta_1 g_1(\mathbf{x}) + \cdots + \beta_k g_k(\mathbf{x}) + \varepsilon$, donde $g_1,\dots,g_k$ son funciones conocidas de los regresores. Las funciones $g_j$ pueden ser muy no lineales (cuadrados, logaritmos, interacciones, ratios), pero cada una entra multiplicada por un único coeficiente desconocido. La estimación por MCO, el teorema de Gauss-Markov y la maquinaria inferencial de los Capítulos 3-5 son todos aplicables.
+:::
+
+## 6.2 Modelos cuadráticos
+
+La forma más sencilla de captar una relación no lineal consiste en añadir el cuadrado de un regresor:
+$$
+y = \beta_0 + \beta_1 x + \beta_2 x^2 + \varepsilon.
+$$
+Ahora el efecto parcial de $x$ sobre $y$ deja de ser constante:
+$$
+\frac{\partial y}{\partial x} = \beta_1 + 2\beta_2 x.
+$$
+El efecto marginal depende del *punto* del eje $x$ en que lo evaluemos. Los signos de $\beta_1$ y $\beta_2$ determinan la forma de la relación:
+
+- $\beta_1 > 0,\ \beta_2 < 0$: creciente y luego decreciente --- U invertida con máximo en $x^* = -\beta_1/(2\beta_2)$.
+- $\beta_1 < 0,\ \beta_2 > 0$: decreciente y luego creciente --- forma de U con mínimo en $x^*$.
+- $\beta_1 > 0,\ \beta_2 > 0$: creciente a tasa creciente (convexa, con pendiente positiva).
+- $\beta_1 < 0,\ \beta_2 < 0$: decreciente a tasa creciente (descenso acelerado).
+
+Igualando a cero el efecto parcial y despejando se obtiene el **punto de inflexión**
+$$
+x^* \;=\; -\,\frac{\beta_1}{2\beta_2}.
+$$
+Que $x^*$ sea un máximo o un mínimo se lee directamente del signo de $\beta_2$ (negativo para un máximo, positivo para un mínimo).
+
+::: {.callout-note}
+## Derivación del punto de inflexión
+
+Partimos de la condición de primer orden $\partial y/\partial x = 0$:
+$$
+\beta_1 + 2\beta_2 x = 0 \;\;\Longrightarrow\;\; x^* = -\frac{\beta_1}{2\beta_2}.
+$$
+La condición de segundo orden es $\partial^2 y/\partial x^2 = 2\beta_2$. Si $\beta_2 < 0$, la segunda derivada es negativa y $x^*$ es un máximo; si $\beta_2 > 0$, la segunda derivada es positiva y $x^*$ es un mínimo. La fórmula es la misma; el signo de $\beta_2$ decide la naturaleza del óptimo.
+:::
+
+::: {.callout-note}
+## Ejemplo: salario y edad
+
+Un estudio estima
+$$
+\widehat{\text{wage}} = -10 + 1{,}5\,\text{age} - 0{,}02\,\text{age}^2.
+$$
+El efecto marginal de la edad es $1{,}5 - 0{,}04\,\text{age}$.
+
+- A los 20 años: $1{,}5 - 0{,}04(20) = 0{,}7$ euros por año de edad.
+- A los 30 años: $1{,}5 - 0{,}04(30) = 0{,}3$ euros por año.
+- A los 40 años: $1{,}5 - 0{,}04(40) = -0{,}1$ euros por año.
+
+El punto de inflexión es $\text{age}^* = 1{,}5 / (2 \cdot 0{,}02) = 37{,}5$ años. Antes de los 37,5 un año más de edad aumenta el salario predicho; después, lo reduce.
+:::
+
+::: {.callout-warning}
+## Error frecuente: anunciar un punto de inflexión fuera de los datos
+
+La fórmula $x^* = -\beta_1/(2\beta_2)$ existe siempre, pero el punto de inflexión solo es económicamente significativo si cae dentro del rango muestral de $x$. Si $x^*$ es, por ejemplo, 75 años de experiencia y nadie en la muestra supera los 50, el "punto crítico" es una extrapolación y no debería venderse como evidencia de rendimientos decrecientes entre los trabajadores con más experiencia --- los datos simplemente no cubren esa zona.
+:::
+
+En R, el término cuadrático se incluye con `I(exper^2)`. El envoltorio `I()` (de "as is", *tal cual*) protege al operador `^` de ser interpretado por el lenguaje de fórmulas de R como cruce de efectos.
+
+## 6.3 Transformaciones logarítmicas
+
+Tomar el logaritmo natural de uno o de ambos lados de la ecuación de regresión cambia la interpretación del coeficiente. Los cuatro casos de uso habitual se resumen abajo, con $\beta_1$ denotando la pendiente sobre el regresor (posiblemente transformado).
+
+| Modelo | Dependiente | Independiente | Interpretación de $\beta_1$ |
+|--------|-------------|---------------|------------------------------|
+| Nivel-nivel | $y$ | $x$ | $\Delta y = \beta_1\,\Delta x$ (unidades de $y$ por unidad de $x$) |
+| Log-nivel | $\ln(y)$ | $x$ | $\%\Delta y \approx 100\,\beta_1\,\Delta x$ (semi-elasticidad) |
+| Nivel-log | $y$ | $\ln(x)$ | $\Delta y \approx (\beta_1/100)\,\%\Delta x$ |
+| Log-log | $\ln(y)$ | $\ln(x)$ | $\%\Delta y \approx \beta_1\,\%\Delta x$ (elasticidad) |
+
+Hay tres razones prácticas para tomar logaritmos de una variable estrictamente positiva como el salario o la renta: reducir la asimetría a la derecha, estabilizar la varianza (un remedio parcial frente a ciertas formas de heterocedasticidad; véase el Capítulo 7) y dar a los coeficientes una lectura en porcentaje. La especificación log-log es especialmente habitual cuando la teoría económica predice elasticidad constante (por ejemplo, funciones de producción Cobb-Douglas o demandas isoelásticas).
+
+::: {.callout-note}
+## Ejemplo: ecuación de salario log-nivel
+
+Si la ecuación estimada es
+$$
+\widehat{\ln(\text{wage})} = 1{,}5 + 0{,}02\,\text{age},
+$$
+entonces un año adicional de edad se asocia con aproximadamente un $0{,}02 \times 100 = 2\,\%$ de aumento en el salario, manteniendo el resto constante. La aproximación $\%\Delta y \approx 100\,\beta_1$ es precisa para $\beta_1$ pequeño; para coeficientes grandes el cambio porcentual exacto es $100\,(e^{\beta_1} - 1)$.
+:::
+
+::: {.callout-warning}
+## Error frecuente: tomar logaritmos de ceros o negativos
+
+El logaritmo natural no está definido en cero ni en números negativos. Antes de logaritmar una variable, comprueba que todas las observaciones son estrictamente positivas. Para variables con muchos ceros (horas trabajadas, donaciones, exportaciones), $\ln$ no es una opción sin más; las alternativas incluyen $\ln(1 + x)$, el seno hiperbólico inverso o un modelo en dos partes. En este capítulo nos ceñimos a variables estrictamente positivas.
+:::
+
+## 6.4 Términos de interacción
+
+Un **término de interacción** permite que un regresor module el efecto parcial de otro. Con dos regresores continuos $x_1$ y $x_2$,
+$$
+y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \beta_3 (x_1 \cdot x_2) + \varepsilon,
+$$
+el efecto parcial de $x_1$ sobre $y$ es
+$$
+\frac{\partial y}{\partial x_1} = \beta_1 + \beta_3\,x_2.
+$$
+Pasa ahora a depender del nivel de $x_2$. Simétricamente, el efecto parcial de $x_2$ depende de $x_1$. El coeficiente $\beta_3$ del producto nos dice cuánto varía la pendiente de $x_1$ cuando $x_2$ aumenta en una unidad (y viceversa).
+
+La misma idea se aplica cuando una de las dos variables es una ficticia (Sección 6.5.2) o cuando ambas lo son. Una interacción significativa indica que el efecto de una variable sobre $y$ es *heterogéneo* en la otra --- una propiedad de enorme relevancia para la política económica: un tratamiento con efecto *medio* positivo puede perjudicar a subgrupos concretos si la interacción es suficientemente grande en la dirección equivocada.
+
+::: {.callout-warning}
+## Error frecuente: omitir los efectos principales al incluir una interacción
+
+Un modelo que contiene $x_1 \cdot x_2$ pero omite $x_1$ y/o $x_2$ por separado obliga al efecto parcial del término omitido a pasar por cero. Salvo que exista una razón teórica muy fuerte, *incluye siempre los efectos principales cuando incluyas su interacción.* En R, la sintaxis `x1*x2` se expande automáticamente a `x1 + x2 + x1:x2`, lo que evita este error.
+:::
+
+## 6.5 Variables ficticias
+
+La información cualitativa --- género, estado civil, región, sector, estación --- entra en una regresión mediante **variables ficticias** (también llamadas *indicadoras* o *binarias*). Una ficticia toma el valor 1 cuando la característica de interés está presente y 0 en caso contrario:
+$$
+D = \begin{cases} 1 & \text{si la característica está presente,} \\ 0 & \text{en caso contrario.} \end{cases}
+$$
+
+En trabajo aplicado son típicos tres tipos de variables cualitativas.
+
+- *Binaria*: dos categorías, codificadas con una sola ficticia. Ejemplo: `female` $=1$ si mujer, $0$ si hombre.
+- *Nominal*: más de dos, sin orden. Ejemplo: una variable `platform` con valores Instagram, TikTok, X. No hay ordenación numérica natural ni una noción de "más" o "menos".
+- *Ordinal*: más de dos, ordenadas. Ejemplo: la variable `looks` del dataset `beauty`, codificada de 1 (por debajo de la media) a 5 (por encima de la media).
+
+Para una variable ordinal existe una disyuntiva. Puede tratarse como continua e incluir un único coeficiente de pendiente (asumiendo que el efecto de pasar de 2 a 3 es igual al de pasar de 4 a 5), o puede convertirse en un conjunto de ficticias y dejar que los datos decidan si los escalones están equiespaciados. La práctica del §6.8 hace las dos cosas para comparar.
+
+### 6.5.1 La trampa de la ficticia
+
+Si una variable cualitativa tiene $J$ categorías, en una regresión que contenga intercepto pueden incluirse a lo sumo $J - 1$ ficticias. Incluir las $J$ generaría multicolinealidad perfecta con la constante: las $J$ ficticias suman una columna de unos, que es exactamente la columna del intercepto. MCO no puede entonces identificar los coeficientes individuales --- la matriz $X^{\prime}X$ es singular --- y cualquier software descartará automáticamente una de las ficticias o se negará a calcular. La categoría descartada se llama categoría de **referencia** o **base**, y cada uno de los demás coeficientes de ficticia se interpreta como una *diferencia respecto a ella*.
+
+::: {.callout-note}
+## Ejemplo: ficticia de intercepto por género
+
+Supongamos
+$$
+\widehat{\text{wage}} = 20 - 5\,\text{female} + 2\,\text{age}.
+$$
+
+- Para los hombres ($\text{female} = 0$): $\widehat{\text{wage}} = 20 + 2\,\text{age}$.
+- Para las mujeres ($\text{female} = 1$): $\widehat{\text{wage}} = 15 + 2\,\text{age}$.
+
+La ficticia desplaza la recta de regresión *hacia abajo* en 5 euros para las mujeres, pero deja la *pendiente* sobre la edad inalterada. Hombres y mujeres ganan los mismos 2 euros por año de edad; solo difiere el intercepto.
+:::
+
+### 6.5.2 Ficticias de pendiente (interacciones con una ficticia)
+
+Para permitir que *tanto* el intercepto *como* la pendiente difieran entre grupos, interactúa la ficticia con un regresor continuo. El modelo
+$$
+y = \beta_0 + \beta_1 D + \beta_2 x + \beta_3 (D \cdot x) + \varepsilon
+$$
+tiene efecto parcial $\partial y / \partial x = \beta_2 + \beta_3 D$, que vale $\beta_2$ en el grupo de referencia ($D = 0$) y $\beta_2 + \beta_3$ en el grupo indicado ($D = 1$). El coeficiente $\beta_3$ de la interacción es exactamente la *diferencia de pendientes* entre los dos grupos, y un test $t$ sobre $\beta_3$ es un contraste de igualdad de pendientes.
+
+::: {.callout-note}
+## Ejemplo: rendimientos distintos de la edad por género
+
+Ecuación estimada:
+$$
+\widehat{\text{wage}} = 20 - 5\,\text{female} + 2\,\text{age} - 1\,(\text{female}\cdot \text{age}).
+$$
+
+- Hombres: $\widehat{\text{wage}} = 20 + 2\,\text{age}$. Cada año añade 2 euros.
+- Mujeres: $\widehat{\text{wage}} = 15 + 1\,\text{age}$. Cada año añade 1 euro.
+
+La ficticia de intercepto ($-5$) y la de pendiente ($-1$) capturan dos formas distintas de desigualdad: las mujeres parten más abajo *y* además ganan menos con la edad.
+:::
+
+## 6.6 Test de Chow
+
+Supongamos que sospechamos que la *regresión completa* --- intercepto y todas las pendientes --- difiere entre dos grupos (hombres vs. mujeres, antes vs. después de una reforma, regiones tratadas vs. control). El **test de Chow** es el test $F$ de la hipótesis nula conjunta
+$$
+H_0: \quad \text{todos los coeficientes son iguales en los dos grupos.}
+$$
+Compara la suma de cuadrados de residuos de una regresión **agrupada** (una ecuación sobre la muestra completa) con la suma de las sumas de cuadrados de residuos de **dos regresiones separadas** (una por grupo).
+
+Sean $\text{SCR}_P$ la SCR agrupada y $\text{SCR}_1, \text{SCR}_2$ las SCR de las dos regresiones por grupo. Con $k$ coeficientes de pendiente en la especificación (común) y $n = n_1 + n_2$ observaciones,
+$$
+F \;=\; \frac{\bigl(\text{SCR}_P - \text{SCR}_1 - \text{SCR}_2\bigr) / (k+1)}{\bigl(\text{SCR}_1 + \text{SCR}_2\bigr) / \bigl(n - 2(k+1)\bigr)} \;\sim\; F_{\,k+1,\; n-2(k+1)} \ \text{bajo}\ H_0.
+$$
+Los grados de libertad del numerador, $k+1$, cuentan los coeficientes que la hipótesis nula restringe a ser iguales (el intercepto más las $k$ pendientes). Los grados de libertad del denominador, $n - 2(k+1)$, provienen de correr dos regresiones separadas, cada una con $k+1$ parámetros.
+
+Algebraicamente, el mismo test puede hacerse agrupando los datos, interactuando completamente la ficticia de grupo con todos los regresores y usando `anova()` para comparar el modelo restringido con el irrestricto. La práctica del §6.8 verifica que ambos enfoques dan idéntico estadístico $F$ y mismo $p$-valor.
+
+::: {.callout-warning}
+## Error frecuente: olvidar que Chow exige varianzas de error iguales
+
+El estadístico $F$ de Chow se deriva bajo el supuesto de que la varianza del error es la misma en los dos grupos. Si las dos submuestras presentan varianzas residuales muy diferentes, el test puede ser engañoso. La práctica moderna consiste o bien en usar una versión robusta a heterocedasticidad (por ejemplo, un test de Wald con errores estándar robustos sobre la regresión interactuada) o bien en tomar logaritmos de la variable dependiente; ambas opciones se retoman en el Capítulo 7.
+:::
+
+## 6.7 Práctica A: formas no lineales en `beauty` (Tutorial 6)
+
+El dataset `beauty` del paquete **wooldridge** contiene salarios por hora, años de educación y de experiencia, una puntuación ordinal de apariencia (`looks`) de 1 a 5, y ficticias de género y estado civil. Lo usamos para ajustar una base lineal, añadir un término cuadrático en experiencia, tomar logaritmo del salario y, por último, introducir una interacción entre apariencia y educación.
+
+```{r ch06-laba-setup}
+#| message: false
+library(wooldridge)
+data("beauty")
+# Renombramos al castellano para alinear con los apuntes.
+beauty$salario   <- beauty$wage
+beauty$apariencia <- beauty$looks
+beauty$mujer     <- beauty$female
+beauty$casado    <- beauty$married
+```
+
+### Una base lineal
+
+```{r ch06-laba-linear}
+modelo_lin <- lm(salario ~ apariencia + educ + exper, data = beauty)
+summary(modelo_lin)
+```
+
+La base muestra los signos habituales: educación y apariencia se asocian con salarios más altos, también la experiencia. Pero la especificación lineal obliga a que el rendimiento marginal de la experiencia sea el mismo en el año 1 que en el año 30 --- una restricción fuerte.
+
+### Añadiendo un término cuadrático en experiencia
+
+```{r ch06-laba-quadratic}
+modelo_quad <- lm(salario ~ apariencia + educ + exper + I(exper^2),
+                  data = beauty)
+summary(modelo_quad)
+```
+
+El coeficiente de `exper` debería ser positivo y el de `I(exper^2)` negativo --- el clásico perfil cóncavo salario-experiencia. El efecto marginal $\partial \text{salario}/\partial \text{exper} = \hat\beta_3 + 2\hat\beta_4\,\text{exper}$ puede evaluarse en varios niveles de experiencia:
+
+```{r ch06-laba-marginal}
+b3 <- coef(modelo_quad)["exper"]
+b4 <- coef(modelo_quad)["I(exper^2)"]
+
+# Rango de experiencia en la muestra
+range(beauty$exper)
+
+# Efecto marginal en exper = 10, 20, 30, 40
+sapply(c(10, 20, 30, 40), function(x) b3 + 2 * b4 * x)
+```
+
+El rendimiento marginal se va reduciendo a medida que se acumula experiencia. El **punto de inflexión** es
+
+```{r ch06-laba-turning}
+exp_star <- -b3 / (2 * b4)
+exp_star
+```
+
+Siempre que `exp_star` caiga dentro del rango observado de `exper`, la parábola tiene un máximo significativo: a partir de ese punto, el salario predicho empieza a caer. Si queda fuera, lo único que podemos afirmar es que los rendimientos son decrecientes en todo el tramo observado.
+
+### Logaritmo del salario
+
+Para pasar a una interpretación de semi-elasticidad, tomamos logaritmos en el lado izquierdo:
+
+```{r ch06-laba-log}
+modelo_logq <- lm(log(salario) ~ apariencia + educ + exper + I(exper^2),
+                  data = beauty)
+summary(modelo_logq)
+```
+
+El coeficiente de `educ` se lee ahora como "un año más de educación se asocia con un aumento de $100 \cdot \hat\beta_{\text{educ}}$ por ciento en el salario por hora, manteniendo constante la apariencia y la experiencia". El efecto marginal **porcentual** de un año más de experiencia en un nivel dado `x` es aproximadamente $100\,(\hat\beta_{\text{exper}} + 2\hat\beta_{\text{exper}^2}\,x)$:
+
+```{r ch06-laba-log-marginal}
+b3l <- coef(modelo_logq)["exper"]
+b4l <- coef(modelo_logq)["I(exper^2)"]
+sapply(c(10, 30), function(x) 100 * (b3l + 2 * b4l * x))
+```
+
+Un trabajador con 10 años de experiencia gana un *porcentaje* distinto por año adicional que uno con 30.
+
+### Interacción: apariencia $\times$ educación
+
+¿La prima salarial asociada a una mejor apariencia depende del nivel educativo del trabajador? La forma abreviada `apariencia * educ` se expande a `apariencia + educ + apariencia:educ`:
+
+```{r ch06-laba-interaction}
+modelo_int <- lm(log(salario) ~ apariencia * educ + exper + I(exper^2),
+                 data = beauty)
+summary(modelo_int)
+```
+
+El efecto marginal de `apariencia` sobre $\ln(\text{salario})$ es $\hat\beta_{\text{apariencia}} + \hat\beta_{\text{apariencia:educ}} \cdot \text{educ}$. Multiplicado por 100 es el cambio porcentual del salario por una unidad más de apariencia:
+
+```{r ch06-laba-interaction-me}
+b_apariencia <- coef(modelo_int)["apariencia"]
+b_int       <- coef(modelo_int)["apariencia:educ"]
+me <- function(e) 100 * (b_apariencia + b_int * e)
+sapply(c(12, 16), me)
+```
+
+Un sencillo test $t$ sobre el coeficiente de la interacción (la fila `apariencia:educ` del resumen) indica si la prima varía genuinamente con la educación o si es estadísticamente indistinguible de una constante.
+
+## 6.8 Práctica B: ficticias y test de Chow (Tutorial 7)
+
+Esta práctica retoma la pregunta de género que abría el capítulo. Usamos los mismos datos `beauty`, construimos ficticias categóricas a partir de la apariencia ordinal y cerramos con un test de Chow manual.
+
+```{r ch06-labb-setup}
+#| message: false
+library(wooldridge)
+data("beauty")
+beauty$salario   <- beauty$wage
+beauty$apariencia <- beauty$looks
+beauty$mujer     <- beauty$female
+beauty$casado    <- beauty$married
+table(beauty$mujer)
+table(beauty$casado)
+table(beauty$apariencia)
+```
+
+### Ficticias de intercepto: género y estado civil
+
+```{r ch06-labb-intercept}
+modelo_d <- lm(salario ~ apariencia + educ + exper + mujer + casado,
+               data = beauty)
+summary(modelo_d)
+```
+
+El coeficiente de `mujer` es la brecha salarial estimada entre mujeres y hombres, manteniendo constantes apariencia, educación y experiencia; el coeficiente de `casado` es la prima por estar casado/a. Ambos desplazamientos afectan solo al intercepto --- las pendientes sobre los regresores continuos quedan restringidas a ser iguales en los dos grupos.
+
+### Ficticia de pendiente: ¿el rendimiento de la apariencia difiere por género?
+
+```{r ch06-labb-slope}
+modelo_pend <- lm(salario ~ apariencia * mujer + educ + exper + casado,
+                  data = beauty)
+summary(modelo_pend)
+
+b_apariencia <- coef(modelo_pend)["apariencia"]
+b_int       <- coef(modelo_pend)["apariencia:mujer"]
+me_hombres <- b_apariencia
+me_mujeres <- b_apariencia + b_int
+c(hombres = me_hombres, mujeres = me_mujeres)
+```
+
+El coeficiente `apariencia:mujer` es la diferencia de pendiente de `apariencia` entre mujeres y hombres. Un test $t$ sobre ese único coeficiente es exactamente el contraste de igualdad de pendientes; si es pequeño en valor absoluto, el rendimiento marginal de la apariencia es estadísticamente el mismo en ambos grupos.
+
+### Ficticias categóricas a partir de la apariencia ordinal
+
+Tratar `apariencia` como continua impone equiespaciado entre categorías adyacentes. Un enfoque más flexible consiste en construir ficticias para las categorías y dejar que los datos hablen. Colapsamos `apariencia` en tres bloques --- por debajo de la media ($\le 2$), media ($=3$) y por encima de la media ($\ge 4$) --- y usamos `media` como referencia omitida:
+
+```{r ch06-labb-categorical}
+beauty$bajo_media <- ifelse(beauty$apariencia <= 2, 1, 0)
+beauty$alto_media <- ifelse(beauty$apariencia >= 4, 1, 0)
+# 'media' (apariencia == 3) es la categoría de referencia y queda omitida.
+
+modelo_cat <- lm(salario ~ bajo_media + alto_media + educ + exper +
+                   mujer + casado, data = beauty)
+summary(modelo_cat)
+```
+
+El coeficiente de `bajo_media` es la brecha salarial (en USD por hora de 1976) entre los trabajadores con apariencia "por debajo de la media" y el grupo omitido de apariencia "media", manteniendo todo lo demás constante. El de `alto_media` es la brecha análoga para "por encima de la media". Si las dos brechas son aproximadamente simétricas en torno a cero --- $\hat\beta_{\text{bajo\_media}} \approx -\hat\beta_{\text{alto\_media}}$ ---, la especificación continua era una simplificación razonable; si no, las ficticias revelan asimetría.
+
+### Test de Chow para cambio estructural por género
+
+Preguntamos ahora si la ecuación salarial *completa* difiere entre hombres y mujeres, no solo el intercepto ni la pendiente de un único regresor. El test de Chow compara una regresión agrupada en la muestra completa con dos regresiones separadas, una por género. Obsérvese que `mujer` se elimina de las regresiones por subgrupo porque es constante dentro de cada submuestra:
+
+```{r ch06-labb-chow}
+# Regresión agrupada (muestra completa)
+modelo_p <- lm(salario ~ bajo_media + alto_media + educ + exper +
+                 mujer + casado, data = beauty)
+
+# Regresiones por subgrupo
+modelo_f <- lm(salario ~ bajo_media + alto_media + educ + exper + casado,
+               data = beauty, subset = mujer == 1)
+modelo_m <- lm(salario ~ bajo_media + alto_media + educ + exper + casado,
+               data = beauty, subset = mujer == 0)
+
+SCR_P <- sum(residuals(modelo_p)^2)
+SCR_F <- sum(residuals(modelo_f)^2)
+SCR_M <- sum(residuals(modelo_m)^2)
+
+n <- nrow(beauty)
+k <- length(coef(modelo_p)) - 1   # nº de pendientes en el modelo agrupado
+
+F_chow <- ((SCR_P - (SCR_F + SCR_M)) / (k + 1)) /
+          ((SCR_F + SCR_M) / (n - 2 * (k + 1)))
+p_valor <- 1 - pf(F_chow, df1 = k + 1, df2 = n - 2 * (k + 1))
+
+c(F = F_chow, gl1 = k + 1, gl2 = n - 2 * (k + 1), p_valor = p_valor)
+```
+
+Si `F_chow` supera el valor crítico (equivalentemente, si `p_valor` cae por debajo del nivel de significación elegido), rechazamos $H_0$ y concluimos que la ecuación salarial no es la misma para hombres y mujeres --- alguna combinación de intercepto y pendientes difiere.
+
+### Chow mediante `anova()`
+
+El mismo test puede hacerse sobre la muestra agrupada interactuando `mujer` con cada uno de los demás regresores y comparando el modelo restringido con el irrestricto vía `anova()`:
+
+```{r ch06-labb-chow-anova}
+mR <- lm(salario ~ bajo_media + alto_media + educ + exper + casado + mujer,
+         data = beauty)
+mU <- lm(salario ~ mujer * (bajo_media + alto_media + educ + exper + casado),
+         data = beauty)
+anova(mR, mU)
+```
+
+El estadístico $F$, los grados de libertad y el $p$-valor coinciden con el cálculo manual. Esta segunda forma suele ser más cómoda, porque admite de manera natural errores estándar robustos (Capítulo 7) y contrastes de cambio estructural parcial (cuando solo algunos coeficientes pueden diferir).
+
+## Auto-evaluación {.unnumbered}
+
+Seis preguntas breves de opción múltiple. Intenta cada una antes de desplegar la respuesta.
+
+::: {.callout-tip collapse="true"}
+## P1. Efecto marginal en un modelo cuadrático
+
+En el modelo $y = \beta_0 + \beta_1 x + \beta_2 x^2 + \varepsilon$, el efecto marginal de $x$ sobre $y$ es:
+
+- A. $\beta_1$, constante.
+- B. $\beta_2$, constante.
+- C. $\beta_1 + 2\beta_2 x$ --- depende de $x$.
+- D. Siempre positivo.
+
+**Respuesta: C.** Derivando el modelo respecto a $x$ se obtiene $\partial y/\partial x = \beta_1 + 2\beta_2 x$. El efecto marginal varía con el nivel en que se evalúe, que es precisamente lo que motiva la especificación cuadrática para captar rendimientos decrecientes (o acelerados).
+:::
+
+::: {.callout-tip collapse="true"}
+## P2. Interpretación de un coeficiente log-nivel
+
+En una regresión $\ln(y) = \beta_0 + \beta_1 x + \varepsilon$, el coeficiente $\beta_1$ es aproximadamente:
+
+- A. El cambio en $y$ por una unidad de $x$.
+- B. El cambio porcentual en $y$ por una unidad de $x$ (en torno a $100\beta_1$ por ciento).
+- C. La elasticidad de $y$ respecto a $x$.
+- D. El cambio en nivel en $y$ cuando $x$ se duplica.
+
+**Respuesta: B.** Un coeficiente log-nivel es una **semi-elasticidad**: un aumento unitario de $x$ se asocia con aproximadamente un $100\beta_1$ por ciento de cambio en $y$. Las elasticidades (opción C) corresponden a especificaciones log-log.
+:::
+
+::: {.callout-tip collapse="true"}
+## P3. ¿Por qué es útil tomar logaritmos?
+
+Una razón habitual para tomar logaritmos de una variable estrictamente positiva como el salario es:
+
+- A. Violar a propósito los supuestos de Gauss-Markov.
+- B. Porque $R^2$ siempre es mayor en modelos en logaritmos.
+- C. Reducir la asimetría a la derecha, estabilizar parcialmente la varianza y obtener coeficientes con interpretación porcentual.
+- D. Lograr que el regresor se distribuya normalmente.
+
+**Respuesta: C.** Las tres motivaciones importan en trabajo aplicado. El logaritmo suele acercar a la simetría una distribución salarial sesgada, amortigua la varianza creciente con el nivel y ofrece semi-elasticidades o elasticidades fáciles de comunicar.
+:::
+
+::: {.callout-tip collapse="true"}
+## P4. Interpretación de una interacción
+
+Si $\hat\beta_3$ en el modelo $y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \beta_3 (x_1 \cdot x_2) + \varepsilon$ es estadísticamente significativo, entonces:
+
+- A. El efecto de $x_1$ sobre $y$ es el mismo para cualquier valor de $x_2$.
+- B. $x_1$ y $x_2$ no tienen efectos separados.
+- C. El efecto de $x_1$ sobre $y$ *no* es constante: varía con $x_2$.
+- D. MCO pasa a ser sesgado.
+
+**Respuesta: C.** Una interacción significativa implica pendientes heterogéneas. El efecto parcial de $x_1$ es $\beta_1 + \beta_3 x_2$ y depende del nivel de $x_2$. En lenguaje causal, esto es exactamente la idea de *efectos de tratamiento heterogéneos*.
+:::
+
+::: {.callout-tip collapse="true"}
+## P5. La trampa de la ficticia
+
+Una variable categórica tiene 4 categorías. Incluyendo intercepto, debes añadir:
+
+- A. 4 ficticias, una por categoría.
+- B. 3 ficticias; la cuarta categoría queda como referencia omitida.
+- C. 2 ficticias.
+- D. 1 ficticia.
+
+**Respuesta: B.** Con $J = 4$ categorías, incluir las cuatro ficticias junto al intercepto genera multicolinealidad perfecta: las cuatro suman la columna de unos. Hay que descartar una para que sirva de referencia y leer las tres restantes como diferencias respecto a ella.
+:::
+
+::: {.callout-tip collapse="true"}
+## P6. ¿Qué contrasta el test de Chow?
+
+El test de Chow para cambio estructural entre dos grupos contrasta la hipótesis nula:
+
+- A. Todos los coeficientes (intercepto y pendientes) son iguales en los dos grupos.
+- B. Solo difiere el intercepto.
+- C. Solo difiere la pendiente de un regresor.
+- D. Las dos varianzas del error son iguales.
+
+**Respuesta: A.** El estadístico $F$ de Chow compara la SCR agrupada con la suma de las SCR por subgrupo. Bajo $H_0$, todos los coeficientes --- intercepto y las $k$ pendientes --- son iguales en los dos grupos. Rechazar $H_0$ dice únicamente que *alguno* difiere; no precisa cuál.
+:::
+
+La versión interactiva en `learnr`, con doce preguntas y código R en vivo, está en `LEARNR/06_nonlinear_and_qualitative.Rmd`.
+
+## Ejercicios {.unnumbered}
+
+**Ejercicio 6.1 ★ --- Efecto marginal y punto de inflexión.** Con `wage1` del paquete **wooldridge**, estima
+$$
+\ln(\text{wage}) = \beta_0 + \beta_1\,\text{educ} + \beta_2\,\text{exper} + \beta_3\,\text{exper}^2 + \varepsilon.
+$$
+
+(a) Reporta $\hat\beta_2$, $\hat\beta_3$ y sus errores estándar.
+(b) Calcula el rendimiento marginal *porcentual* de la experiencia en `exper = 5, 15, 25`.
+(c) Halla el nivel $x^*$ que maximiza el logaritmo del salario predicho y comprueba que cae dentro del rango muestral.
+
+*Solución completa en la edición del docente.*
+
+**Ejercicio 6.2 ★ --- ¿Cuántas ficticias?** Una variable categórica `region` toma los valores Norte, Sur, Este, Oeste.
+
+(a) ¿Cuántas ficticias deberías incluir en una regresión que contenga intercepto? ¿Por qué?
+(b) Escribe el modelo con intercepto y $J - 1$ ficticias y explica cómo interpretar cada coeficiente.
+(c) Describe en una frase qué cambiaría si, en su lugar, eliminaras el intercepto e incluyeras las cuatro ficticias.
+
+*Solución completa en la edición del docente.*
+
+**Ejercicio 6.3 ★★ --- Test de Chow para casados vs. solteros.** Con `wage1`, realiza un test de Chow para determinar si la ecuación
+$$
+\ln(\text{wage}) = \beta_0 + \beta_1\,\text{educ} + \beta_2\,\text{exper} + \beta_3\,\text{tenure} + \varepsilon
+$$
+difiere entre trabajadores casados y no casados. Reporta (i) las tres SCR, (ii) el estadístico $F$ con sus dos grados de libertad y (iii) el $p$-valor. Verifica el cálculo manual frente a `anova()` sobre el modelo equivalente totalmente interactuado.
+
+*Solución completa en la edición del docente.*
+
+**Ejercicio 6.4 ★★ --- Ficticia de pendiente por género.** Con `wage1`, estima
+$$
+\ln(\text{wage}) = \beta_0 + \beta_1\,\text{female} + \beta_2\,\text{educ} + \beta_3\,(\text{female}\cdot\text{educ}) + \varepsilon.
+$$
+
+(a) Interpreta $\hat\beta_3$ en lenguaje llano.
+(b) ¿Cuál es el rendimiento porcentual estimado de un año más de educación para los hombres? ¿Y para las mujeres?
+(c) Contrasta $H_0: \beta_3 = 0$ al 5 % y enuncia la conclusión económica.
+
+*Solución completa en la edición del docente.*
+
+**Ejercicio 6.5 ★★★ --- Ordinal como continua frente a ficticias.** Con `beauty`:
+
+(a) Estima $\text{wage} = \beta_0 + \beta_1\,\text{looks} + \beta_2\,\text{educ} + \beta_3\,\text{exper} + \varepsilon$, tratando `looks` como continua.
+(b) Re-estima el mismo modelo sustituyendo `looks` por las ficticias `bajo_media` y `alto_media` definidas en §6.8.
+(c) Compara las brechas implícitas (por debajo de la media vs. media; por encima de la media vs. media). ¿Son aproximadamente simétricas en torno a cero? ¿Qué dice eso sobre el supuesto de linealidad implícito en (a)?
+
+*Solución completa en la edición del docente.*
+
+**Ejercicio 6.6 ★★★ --- Por qué ambas formas del Chow coinciden.** Demuestra algebraicamente que correr dos regresiones separadas sobre las submuestras de hombres y mujeres da exactamente los mismos valores ajustados, residuos y SCR que correr la regresión agrupada con `mujer` interactuada por completo con todos los regresores. Usa ese hecho para argumentar que el estadístico $F$ de Chow manual (tres SCR) y el de `anova()` deben ser numéricamente idénticos.
+
+*Solución completa en la edición del docente.*

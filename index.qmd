@@ -1,0 +1,54 @@
+---
+title: "Prefacio"
+---
+
+# Prefacio {.unnumbered}
+
+> *Econometría I — Teoría, práctica y aplicaciones* es el libro de texto abierto que acompaña a la asignatura de Econometría I en la Universidad de Granada (UGR), Facultad de Ciencias Económicas y Empresariales. Consolida tres años de materiales docentes —apuntes de clase, tutoriales en R y auto-evaluaciones interactivas— en un único volumen reproducible.
+
+## Qué es este libro
+
+Un texto unificado de segundo curso de grado que acompaña al lector desde la *idea* de un modelo econométrico hasta las destrezas prácticas de estimación, inferencia y diagnóstico necesarias para analizar datos económicos reales. Cada capítulo sigue la misma plantilla de seis secciones:
+
+1. **Objetivos de aprendizaje**
+2. **Pregunta empírica motivadora**
+3. **Teoría**
+4. **Ejemplo aplicado en R**
+5. **Auto-evaluación** (cuestionario interactivo)
+6. **Ejercicios** (★ fácil, ★★ intermedio, ★★★ analítico)
+
+## Cómo está organizado el libro
+
+| Capítulo | Tema |
+|---|---|
+| 1 | Conceptos iniciales |
+| 2 | El modelo de regresión lineal simple |
+| 3 | El modelo de regresión lineal múltiple |
+| 4 | Inferencia |
+| 5 | Predicción y selección de modelos |
+| 6 | Relaciones no lineales e información cualitativa |
+| 7 | Heterocedasticidad |
+| 8 | Autocorrelación |
+| Ap. A | Prerrequisitos matemáticos y estadísticos |
+| Ap. B | Crosswalk Wooldridge ↔ Carter–Griffiths–Lim |
+| Ap. C | Tablas estadísticas |
+
+## Ediciones y licencia
+
+Este libro se publica bajo una licencia **Creative Commons Atribución 4.0 Internacional (CC BY 4.0)**. La edición inglesa equivalente está disponible bajo el título *Econometrics I — Theory, Practice, and Applications*.
+
+## Cómo utilizar los materiales fuente
+
+El libro se construye con [Quarto](https://quarto.org). Cada capítulo es un archivo `.qmd` que combina texto, código R ejecutable y cuestionarios interactivos. Para reconstruir el libro localmente se utiliza el comando `quarto render`. Para la edición española, consulte `NEXT_STEPS.md` para el flujo actual de renderizado.
+
+## Paquetes de R necesarios
+
+```r
+install.packages(c("wooldridge", "readxl", "lmtest", "sandwich", "orcutt"))
+# Paquete complementario (datos y funciones auxiliares)
+# remotes::install_github("agaggero-ugr/econometricsUGR")
+```
+
+## Agradecimientos
+
+Al Departamento de Métodos Cuantitativos para la Economía y la Empresa de la UGR; a los estudiantes de tres promociones consecutivas (2023/24, 2024/25, 2025/26), cuyas preguntas dieron forma a este texto; y a los autores de *Introductory Econometrics* (Wooldridge) y *Principles of Econometrics* (Carter–Griffiths–Lim), sobre cuyas tradiciones pedagógicas se construye este libro.

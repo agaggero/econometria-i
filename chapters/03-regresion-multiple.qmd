@@ -1,0 +1,572 @@
+---
+title: "El Modelo de Regresión Lineal Múltiple"
+---
+
+> *Estado: portado 2026-05-18. Revisión editorial: pendiente. Incluye expansión D12 de §3.7 y §3.8.*
+
+## Objetivos de aprendizaje {.unnumbered}
+
+Al terminar el capítulo el lector debería ser capaz de:
+
+- Explicar por qué la regresión lineal simple rara vez basta para un trabajo empírico creíble, y leer cada pendiente del modelo múltiple como un efecto parcial *ceteris paribus*.
+- Escribir el modelo de regresión lineal múltiple en forma matricial, $\mathbf{y} = \mathbf{X}\boldsymbol{\beta} + \mathbf{u}$, y derivar la solución MCO $\hat{\boldsymbol{\beta}} = (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'\mathbf{y}$.
+- Enunciar los supuestos de Gauss--Markov RLM.1--RLM.5 y reconocer cuál de ellos viola cada patología empírica habitual.
+- Demostrar, en forma matricial, que MCO es insesgado bajo RLM.1--RLM.4 y tiene varianza $\sigma^2(\mathbf{X}'\mathbf{X})^{-1}$ bajo RLM.1--RLM.5.
+- Predecir la *dirección* y el *signo* del sesgo de variable omitida (SVO) a partir de una regresión auxiliar, y verificarlo numéricamente con datos reales.
+- Distinguir $R^2$ de $R^2$ ajustado y explicar por qué este último puede disminuir al añadir regresores.
+
+## Pregunta motivadora {.unnumbered}
+
+> *Una vez que mantenemos constantes la experiencia, la antigüedad, el sexo y el estado civil, ¿cuál es el rendimiento de un año adicional de educación?*
+
+El Capítulo 1 mostró que la brecha bruta de salarios por nivel educativo en `wage1` confunde el efecto de la escolaridad con el de la experiencia, la antigüedad y los rasgos demográficos; el Capítulo 2 estimó una regresión simple de `wage` sobre `educ` y advirtió de forma explícita que la pendiente MCO no podía leerse en clave causal. El modelo de regresión lineal múltiple (RLM) es la herramienta de trabajo que nos permite tomar en serio esa advertencia: al incluir controles, pasamos de medias condicionales brutas a **efectos parciales** --- el cambio en $y$ asociado a un cambio unitario en un regresor, *manteniendo fijos los demás*.
+
+## 3.1 Motivación: el problema de la regresión simple
+
+El modelo de regresión lineal simple
+$$
+y = \beta_0 + \beta_1 x + u
+$$
+tiene una debilidad estructural: todo determinante de $y$ distinto de $x$ queda agrupado en el término de error $u$. Si alguno de esos determinantes omitidos está correlacionado con $x$, entonces $\operatorname{Cov}(x,u)\neq 0$, el supuesto de media condicional cero $\mathbb{E}[u\mid x]=0$ falla, y MCO es **sesgado** para el efecto causal de $x$ sobre $y$ [@wooldridge2020].
+
+::: {.callout-note}
+## Ejemplo: educación y salarios sin controles
+
+Supongamos
+$$
+\text{wage} = \beta_0 + \beta_1\,\text{educ} + u.
+$$
+El error $u$ contiene la *habilidad innata*, el entorno familiar, la motivación, la calidad del centro educativo y otras muchas variables no observables. Si los trabajadores más hábiles también acumulan más educación, entonces $\operatorname{Cov}(\text{educ}, u) > 0$, y el estimador MCO simple $\hat\beta_1$ no aísla el rendimiento causal de la escolaridad: confunde el retorno a la educación con el retorno a aquello que mueve conjuntamente a la habilidad y a la educación.
+:::
+
+La solución es conceptualmente sencilla: **traer al modelo los factores omitidos relevantes como regresores adicionales**. Reemplazamos el modelo simple por
+$$
+\text{wage} = \beta_0 + \beta_1\,\text{educ} + \beta_2\,\text{exper} + \beta_3\,\text{tenure} + u,
+$$
+de modo que la experiencia y la antigüedad pasan a formar parte de la componente sistemática en lugar de quedarse en $u$. El coeficiente $\beta_1$ en este modelo más largo se interpreta como el cambio del salario esperado ante un año adicional de educación, *manteniendo fijas la experiencia y la antigüedad*. Esa es la afirmación *ceteris paribus* a la que aspira la economía empírica.
+
+Dos advertencias merecen subrayarse desde el principio:
+
+- Añadir controles **no** equivale a identificar causalidad. Veremos en §3.9 que el sesgo solo desaparece para las variables cuyos confundidores relevantes incluimos efectivamente.
+- Incluir demasiados regresores, o regresores muy correlacionados, puede *inflar la varianza* sin reducir el sesgo. No hay almuerzo gratis.
+
+## 3.2 El modelo RLM
+
+::: {.callout-note}
+## Definición: el modelo de regresión lineal múltiple
+
+Con $k$ regresores $x_1,\ldots,x_k$, el **modelo poblacional RLM** es
+$$
+y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \cdots + \beta_k x_k + u.
+$$
+Cada pendiente $\beta_j$ es el **efecto parcial** de $x_j$ sobre $y$:
+$$
+\beta_j \;=\; \frac{\partial\, \mathbb{E}[y\mid x_1,\ldots,x_k]}{\partial x_j}.
+$$
+Es decir, $\beta_j$ mide cómo se desplaza la media condicional de $y$ cuando $x_j$ cambia en una unidad y los demás regresores permanecen constantes.
+:::
+
+En el ejemplo salarial, una ecuación estimada como
+$$
+\widehat{\text{wage}} \;=\; 3{,}0 + 1{,}5\,\text{educ} + 0{,}04\,\text{age} + 0{,}07\,\text{exper} + 0{,}05\,\text{tenure}
+$$
+afirma: entre dos trabajadores con la *misma* edad, experiencia y antigüedad que difieren en un año de escolaridad, el salario por hora predicho difiere en 1,50 euros en media. El matiz crucial es ese «misma edad, experiencia y antigüedad» --- es lo que distingue al coeficiente RLM de la pendiente de una regresión no condicional.
+
+::: {.callout-warning}
+## Error frecuente: olvidar el *ceteris paribus*
+
+Un error muy extendido consiste en leer $\hat\beta_1$ como «el efecto sobre $y$ de cambiar $x_1$», sin la cláusula condicional. En RLM toda pendiente es condicional al resto de regresores incluidos. Si cambian los controles del modelo, cambia el significado de $\beta_1$ --- no solo su valor numérico.
+:::
+
+## 3.3 Notación matricial
+
+Para una muestra de $n$ observaciones resulta mucho más limpio apilar el modelo en forma matricial. Definimos
+$$
+\mathbf{y} = \begin{pmatrix} y_1 \\ y_2 \\ \vdots \\ y_n \end{pmatrix}_{n\times 1}, \quad
+\mathbf{X} = \begin{pmatrix}
+1 & x_{11} & x_{12} & \cdots & x_{1k} \\
+1 & x_{21} & x_{22} & \cdots & x_{2k} \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+1 & x_{n1} & x_{n2} & \cdots & x_{nk}
+\end{pmatrix}_{n\times (k+1)}, \quad
+\boldsymbol{\beta} = \begin{pmatrix} \beta_0 \\ \beta_1 \\ \vdots \\ \beta_k \end{pmatrix}_{(k+1)\times 1}, \quad
+\mathbf{u} = \begin{pmatrix} u_1 \\ u_2 \\ \vdots \\ u_n \end{pmatrix}_{n\times 1}.
+$$
+
+El modelo RLM para toda la muestra es entonces
+$$
+\mathbf{y} \;=\; \mathbf{X}\boldsymbol{\beta} + \mathbf{u}.
+$$
+
+La primera columna de $\mathbf{X}$ es una columna de unos, que absorbe el intercepto $\beta_0$. A partir de ahora escribiremos las demostraciones en forma matricial; es la notación estándar de [@wooldridge2020] y rinde frutos a partir del Capítulo 4.
+
+## 3.4 MCO en forma matricial
+
+El estimador de mínimos cuadrados ordinarios (MCO) elige $\hat{\boldsymbol{\beta}}$ minimizando la suma de cuadrados de los residuos
+$$
+\mathrm{SCR}(\boldsymbol{\beta}) \;=\; (\mathbf{y}-\mathbf{X}\boldsymbol{\beta})'(\mathbf{y}-\mathbf{X}\boldsymbol{\beta})
+\;=\; \mathbf{y}'\mathbf{y} - 2\boldsymbol{\beta}'\mathbf{X}'\mathbf{y} + \boldsymbol{\beta}'\mathbf{X}'\mathbf{X}\boldsymbol{\beta}.
+$$
+
+Derivando respecto de $\boldsymbol{\beta}$ e igualando a cero obtenemos las **ecuaciones normales**
+$$
+\mathbf{X}'\mathbf{X}\,\hat{\boldsymbol{\beta}} \;=\; \mathbf{X}'\mathbf{y}.
+$$
+
+Si $\mathbf{X}'\mathbf{X}$ es invertible --- lo que es exactamente el Supuesto RLM.3 más abajo --- la solución única es
+
+$$
+\boxed{\;\hat{\boldsymbol{\beta}} \;=\; (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'\mathbf{y}.\;}
+$$
+
+Los valores ajustados son $\hat{\mathbf{y}} = \mathbf{X}\hat{\boldsymbol{\beta}}$ y los residuos $\hat{\mathbf{u}} = \mathbf{y} - \hat{\mathbf{y}}$. Por construcción, las ecuaciones normales implican $\mathbf{X}'\hat{\mathbf{u}} = \mathbf{0}$: los residuos son ortogonales a todos los regresores, incluida la constante. En particular, la media muestral de $\hat{\mathbf{u}}$ es cero siempre que el modelo contenga un intercepto.
+
+::: {.callout-warning}
+## Error frecuente: confundir $u$ con $\hat u$
+
+Como en el Capítulo 1, $u$ es un objeto *poblacional* e inobservable. El residuo $\hat u_i = y_i - \hat y_i$ es su contrapartida *muestral*, producida *tras* la estimación. Usaremos $\hat{\mathbf{u}}$ para calcular estimadores de varianza y el $R^2$, pero nunca observaremos $\mathbf{u}$ propiamente dicho.
+:::
+
+## 3.5 Supuestos de Gauss--Markov para RLM
+
+Recopilamos ahora los supuestos bajo los que MCO tiene sus propiedades clásicas. Generalizan los del Capítulo 2 sobre regresión simple.
+
+::: {.callout-note}
+## RLM.1 --- Linealidad en los parámetros
+
+El modelo poblacional es
+$$
+y = \beta_0 + \beta_1 x_1 + \cdots + \beta_k x_k + u.
+$$
+La linealidad se exige *en los parámetros* $\beta_j$, no en los regresores: $x_j^2$ o $\ln(x_j)$ son perfectamente válidos.
+:::
+
+::: {.callout-note}
+## RLM.2 --- Muestreo aleatorio
+
+Observamos una muestra aleatoria i.i.d. $\{(y_i, x_{i1}, \ldots, x_{ik}) : i = 1, \ldots, n\}$ extraída de la población descrita por RLM.1.
+:::
+
+::: {.callout-note}
+## RLM.3 --- No multicolinealidad perfecta
+
+En la muestra (y en la población), ningún regresor es constante y no existe ninguna relación lineal exacta entre los regresores. De manera equivalente, $\mathbf{X}'\mathbf{X}$ es invertible.
+:::
+
+::: {.callout-note}
+## RLM.4 --- Media condicional cero
+
+El error tiene media cero condicionada a cualquier valor de los regresores:
+$$
+\mathbb{E}[u \mid x_1, \ldots, x_k] = 0, \qquad \text{o, en forma matricial,}\qquad \mathbb{E}[\mathbf{u}\mid\mathbf{X}] = \mathbf{0}.
+$$
+Es el supuesto que garantiza la **insesgadez** de MCO. Falla siempre que se omite una variable relevante (§3.9), se utiliza una forma funcional equivocada, o hay error de medida o simultaneidad.
+:::
+
+::: {.callout-note}
+## RLM.5 --- Homocedasticidad
+
+La varianza condicional de $u$ no depende de $\mathbf{X}$:
+$$
+\operatorname{Var}(u\mid x_1,\ldots,x_k) = \sigma^2, \qquad \operatorname{Var}(\mathbf{u}\mid\mathbf{X}) = \sigma^2\mathbf{I}_n.
+$$
+:::
+
+Los supuestos RLM.1--RLM.4 proporcionan la **insesgadez** (siguiente sección); añadiendo RLM.5, MCO se convierte en el **estimador lineal insesgado óptimo** (ELIO; *BLUE* en inglés) --- el teorema de Gauss--Markov.
+
+::: {.callout-warning}
+## Error frecuente: confundir colinealidad «perfecta» con «alta»
+
+RLM.3 solo descarta la dependencia lineal *exacta* entre los regresores. Dos variables altamente correlacionadas --- pero no perfectamente correlacionadas --- (por ejemplo `educ` y un test de aptitud `IQ`) siguen cumpliendo RLM.3. Inflarán la varianza de los estimadores MCO (el $R_j^2$ de la fórmula de varianza estará cerca de 1), pero no los sesgan ni rompen el modelo.
+:::
+
+## 3.6 Insesgadez de MCO (forma matricial)
+
+::: {.callout-note}
+## Teorema: insesgadez de MCO
+
+Bajo RLM.1--RLM.4,
+$$
+\mathbb{E}[\hat{\boldsymbol{\beta}}\mid\mathbf{X}] = \boldsymbol{\beta}.
+$$
+:::
+
+*Esquema de la demostración.* Partiendo de la solución MCO,
+$$
+\hat{\boldsymbol{\beta}} = (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'\mathbf{y}
+= (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'(\mathbf{X}\boldsymbol{\beta} + \mathbf{u})
+= \boldsymbol{\beta} + (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'\mathbf{u}.
+$$
+Tomando esperanzas condicionales y usando RLM.4 ($\mathbb{E}[\mathbf{u}\mid\mathbf{X}] = \mathbf{0}$),
+$$
+\mathbb{E}[\hat{\boldsymbol{\beta}}\mid\mathbf{X}] = \boldsymbol{\beta} + (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}' \mathbb{E}[\mathbf{u}\mid\mathbf{X}] = \boldsymbol{\beta}.
+$$
+Por la ley de esperanzas iteradas, $\mathbb{E}[\hat{\boldsymbol{\beta}}] = \boldsymbol{\beta}$ también de forma incondicional. $\quad\square$
+
+La demostración deja transparente el papel de RLM.4: cualquier correlación entre $\mathbf{X}$ y $\mathbf{u}$ entra en el término de sesgo $(\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}' \mathbb{E}[\mathbf{u}\mid\mathbf{X}]$. Esta es la versión matricial del SVO que deduciremos en §3.9.
+
+## 3.7 Varianza de los estimadores MCO (forma matricial)
+
+::: {.callout-note}
+## Teorema: varianza de MCO
+
+Bajo RLM.1--RLM.5,
+$$
+\operatorname{Var}(\hat{\boldsymbol{\beta}}\mid\mathbf{X}) = \sigma^2 (\mathbf{X}'\mathbf{X})^{-1}.
+$$
+:::
+
+*Esquema de la demostración.* De la prueba de insesgadez, $\hat{\boldsymbol{\beta}} - \boldsymbol{\beta} = (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'\mathbf{u}$. Por tanto
+$$
+\operatorname{Var}(\hat{\boldsymbol{\beta}}\mid\mathbf{X})
+= (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'\, \operatorname{Var}(\mathbf{u}\mid\mathbf{X})\, \mathbf{X}(\mathbf{X}'\mathbf{X})^{-1}
+= (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'\,(\sigma^2\mathbf{I}_n)\,\mathbf{X}(\mathbf{X}'\mathbf{X})^{-1}
+= \sigma^2 (\mathbf{X}'\mathbf{X})^{-1}.
+$$
+Los elementos de la diagonal dan las varianzas de los coeficientes individuales; los de fuera de la diagonal, sus covarianzas. $\quad\square$
+
+La varianza de una pendiente individual $\hat\beta_j$ admite una descomposición univariante muy útil,
+$$
+\operatorname{Var}(\hat\beta_j\mid\mathbf{X}) \;=\; \frac{\sigma^2}{\mathrm{SCT}_j\,(1 - R_j^2)},
+$$
+donde $\mathrm{SCT}_j = \sum_{i=1}^n (x_{ij} - \bar x_j)^2$ y $R_j^2$ es el $R^2$ de la regresión auxiliar de $x_j$ sobre **todos los demás regresores**. De aquí se extraen tres intuiciones:
+
+- Mayor varianza del error ($\sigma^2$ grande) $\Rightarrow$ estimadores menos precisos.
+- Mayor variación muestral de $x_j$ ($\mathrm{SCT}_j$ grande) $\Rightarrow$ estimadores más precisos.
+- Más colinealidad entre $x_j$ y los demás regresores ($R_j^2$ próximo a 1) $\Rightarrow$ estimadores menos precisos. El factor $1/(1-R_j^2)$ es el **factor de inflación de la varianza** (VIF).
+
+Como $\sigma^2$ es desconocida, la estimamos mediante la varianza residual,
+$$
+\hat\sigma^2 \;=\; \frac{\mathrm{SCR}}{n - k - 1} \;=\; \frac{\hat{\mathbf{u}}'\hat{\mathbf{u}}}{n - k - 1},
+$$
+que es insesgada bajo RLM.1--RLM.5. El denominador $n - k - 1$ son los grados de libertad: tamaño muestral menos número de coeficientes estimados (incluido el intercepto).
+
+## 3.8 $R^2$ y $R^2$ ajustado
+
+Como en la regresión simple, la variación total de $y$ se descompone en variación explicada y residual,
+$$
+\mathrm{SCT} \;=\; \mathrm{SCE} + \mathrm{SCR},
+\qquad
+R^2 \;=\; 1 - \frac{\mathrm{SCR}}{\mathrm{SCT}} \;\in\; [0,1].
+$$
+
+Hay, no obstante, una sutileza específica de la RLM: el $R^2$ **nunca decrece al añadir un regresor** al modelo, aun cuando ese regresor sea puro ruido. Cualquier variable nueva aporta, al menos, tanto ajuste como ninguna, porque MCO siempre podría fijar el nuevo coeficiente en cero. En consecuencia, el $R^2$ por sí solo no permite arbitrar entre especificaciones anidadas.
+
+El **$R^2$ ajustado** penaliza la complejidad del modelo:
+$$
+\bar R^2 \;=\; 1 - \frac{\mathrm{SCR}/(n-k-1)}{\mathrm{SCT}/(n-1)}
+\;=\; 1 - \frac{n-1}{n-k-1}\,(1-R^2).
+$$
+A diferencia del $R^2$, el $\bar R^2$ puede *disminuir* cuando se añade una variable irrelevante --- el coste del parámetro adicional supera la ganancia en ajuste. Resulta, por tanto, un resumen más honesto al comparar modelos con distinto número de regresores.
+
+::: {.callout-warning}
+## Error frecuente: perseguir el $R^2$
+
+Un $R^2$ alto no implica que el modelo sea causal, ni que prediga bien fuera de la muestra. Una regresión de `educ` sobre `educ_squared` y `educ_cubed` tendrá un $R^2$ próximo a 1 y ningún contenido económico. Trate al $R^2$ como un *resumen* de bondad de ajuste, no como un criterio de selección de modelos. El AIC y el BIC, introducidos en el Capítulo 5, son más apropiados para esta última tarea.
+:::
+
+## 3.9 Sesgo de variable omitida (SVO)
+
+El sesgo de variable omitida (SVO) es el nombre formal del problema motivado en §3.1. Supongamos que el modelo poblacional **verdadero** es
+$$
+y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + u, \qquad \mathbb{E}[u\mid x_1, x_2] = 0,
+$$
+pero estimamos por MCO el modelo **corto**
+$$
+y = \tilde\beta_0 + \tilde\beta_1 x_1 + \tilde u,
+$$
+omitiendo $x_2$. ¿Qué estima $\tilde\beta_1$?
+
+::: {.callout-note}
+## Teorema: sesgo de variable omitida
+
+Bajo el modelo verdadero anterior y una regresión MCO de $y$ sobre $x_1$ únicamente,
+$$
+\mathbb{E}[\tilde\beta_1\mid\mathbf{x}_1] \;=\; \beta_1 + \beta_2\,\tilde\delta_1,
+$$
+donde $\tilde\delta_1$ es el coeficiente de pendiente de la **regresión auxiliar** de la variable omitida $x_2$ sobre la variable incluida $x_1$:
+$$
+x_2 = \tilde\delta_0 + \tilde\delta_1 x_1 + v.
+$$
+:::
+
+*Esquema de la demostración.* Por la fórmula de la regresión simple,
+$$
+\tilde\beta_1 = \frac{\sum_{i}(x_{1i}-\bar x_1)\,y_i}{\sum_i (x_{1i}-\bar x_1)^2}.
+$$
+Sustituyendo el modelo verdadero $y_i = \beta_0 + \beta_1 x_{1i} + \beta_2 x_{2i} + u_i$ y usando $\sum_i (x_{1i}-\bar x_1) = 0$,
+$$
+\tilde\beta_1 \;=\; \beta_1 + \beta_2\,\underbrace{\frac{\sum_i (x_{1i}-\bar x_1)x_{2i}}{\sum_i (x_{1i}-\bar x_1)^2}}_{=\,\tilde\delta_1}
++ \frac{\sum_i (x_{1i}-\bar x_1)u_i}{\sum_i (x_{1i}-\bar x_1)^2}.
+$$
+El último término tiene esperanza condicional cero por RLM.4 del modelo *verdadero*, lo que deja $\mathbb{E}[\tilde\beta_1\mid\mathbf{x}_1] = \beta_1 + \beta_2\tilde\delta_1$. $\quad\square$
+
+El **sesgo** es el producto $\beta_2\tilde\delta_1$. Se anula en dos casos:
+
+- $\beta_2 = 0$ --- la variable omitida no afecta a $y$ en el modelo verdadero; o
+- $\tilde\delta_1 = 0$ --- la variable omitida no está correlacionada con el regresor incluido.
+
+En cualquier otro caso, omitir una variable relevante y correlacionada contamina $\tilde\beta_1$.
+
+### Signo del sesgo: la tabla 2 $\times$ 2
+
+El signo del sesgo viene determinado por los signos de $\beta_2$ y $\tilde\delta_1$:
+
+|                                   | $\tilde\delta_1 > 0$ | $\tilde\delta_1 < 0$ |
+|-----------------------------------|----------------------|----------------------|
+| **$\beta_2 > 0$**                 | Sesgo positivo       | Sesgo negativo       |
+| **$\beta_2 < 0$**                 | Sesgo negativo       | Sesgo positivo       |
+
+::: {.callout-note}
+## Ejemplo: omitir la habilidad en una ecuación salarial
+
+Supongamos que la ecuación salarial verdadera es $\text{wage} = \beta_0 + \beta_1\,\text{educ} + \beta_2\,\text{habilidad} + u$.
+
+- Los trabajadores más hábiles ganan más, manteniendo fija la educación: $\beta_2 > 0$.
+- Los trabajadores más hábiles adquieren más educación: $\tilde\delta_1 > 0$.
+- El sesgo $\beta_2\tilde\delta_1 > 0$: una regresión simple del salario sobre la educación **sobreestima** el rendimiento causal de la escolaridad.
+
+Es el clásico «sesgo de habilidad» de la literatura de economía laboral. Una pendiente MCO ingenua de, digamos, 0,60 euros por año de escolaridad puede convivir perfectamente con un retorno verdadero de 0,40 una vez se descuenta la habilidad no observada.
+:::
+
+::: {.callout-warning}
+## Incluir una variable irrelevante no es gratis
+
+Añadir una variable cuyo coeficiente verdadero es cero **no** introduce sesgo (la fórmula del SVO da sesgo $= 0 \cdot \tilde\delta_1 = 0$). Pero infla la varianza de todas las demás pendientes a través del término $R_j^2$ de §3.7. La regla práctica es: incluya controles que la teoría o su estrategia de identificación justifique, no regresores que casualmente «parezcan significativos».
+:::
+
+## 3.10 Práctica: Regresión Múltiple en R
+
+Trabajamos de nuevo con `wage1` --- una sección cruzada de 526 trabajadores estadounidenses de mayo de 1976, distribuida con el paquete `wooldridge`. La práctica tiene tres partes: regresiones salariales anidadas, demostración numérica del SVO y una advertencia de multicolinealidad perfecta.
+
+```{r ch03-setup}
+#| message: false
+library(wooldridge)
+data("wage1")
+```
+
+### De la regresión simple a la múltiple
+
+Reestimamos primero la regresión simple de `wage` sobre `educ` y luego añadimos `exper` y `tenure`:
+
+```{r ch03-models}
+model1 <- lm(wage ~ educ, data = wage1)
+model2 <- lm(wage ~ educ + exper + tenure, data = wage1)
+summary(model1)
+summary(model2)
+```
+
+Compare el coeficiente de `educ` en las dos especificaciones. En `model1`, un año adicional de educación se asocia aproximadamente con 0,54 USD/hora más; en `model2`, el mismo coeficiente *aumenta* hasta cerca de 0,59 una vez mantenidos fijos experiencia y antigüedad. En cualquiera de los casos, $\hat\beta_1$ en `model2` es el rendimiento *ceteris paribus* de la educación que `model1` no logró entregar.
+
+Añadamos ahora controles demográficos:
+
+```{r ch03-model3}
+model3 <- lm(wage ~ educ + exper + tenure + female + married, data = wage1)
+summary(model3)
+```
+
+El coeficiente de `female` es la brecha salarial de género condicional, una vez fijadas educación, experiencia, antigüedad y estado civil; el coeficiente de `married` es la prima salarial por matrimonio condicional. Ambos son menores en magnitud que las medias condicionales brutas del Capítulo 1 --- los confundidores han quedado en parte controlados.
+
+Comparemos la bondad de ajuste a lo largo de los tres modelos anidados:
+
+```{r ch03-r2}
+data.frame(
+  modelo  = c("solo educ", "educ+exper+tenure", "completo"),
+  r2      = c(summary(model1)$r.squared,
+              summary(model2)$r.squared,
+              summary(model3)$r.squared),
+  r2_adj  = c(summary(model1)$adj.r.squared,
+              summary(model2)$adj.r.squared,
+              summary(model3)$adj.r.squared)
+)
+```
+
+Tanto el $R^2$ como el $R^2$ ajustado crecen al añadir controles --- aquí cada regresor adicional está justificado por la teoría de economía laboral, de modo que el resultado no debería sorprendernos.
+
+### Sesgo de variable omitida con datos reales
+
+Verifiquemos ahora numéricamente la fórmula del SVO. La regresión «corta» de `wage` sobre `educ` omite dos regresores que sabemos correlacionados con la educación: `exper` y `tenure`. Estimamos las dos regresiones auxiliares:
+
+```{r ch03-aux}
+aux_exper  <- lm(exper  ~ educ, data = wage1)
+aux_tenure <- lm(tenure ~ educ, data = wage1)
+delta_exper  <- coef(aux_exper)["educ"]
+delta_tenure <- coef(aux_tenure)["educ"]
+c(delta_exper = delta_exper, delta_tenure = delta_tenure)
+```
+
+La pendiente de `exper` sobre `educ` es **negativa**: en esta sección cruzada de 1976, los trabajadores con más estudios tienen menos experiencia laboral (algo mecánico --- el tiempo dedicado a estudiar es tiempo no dedicado a trabajar). La pendiente de `tenure` sobre `educ` es ligeramente positiva en esta muestra.
+
+Sustituyamos ahora las pendientes auxiliares y los coeficientes de la *regresión larga* en la fórmula del SVO y comparemos con la diferencia observada entre las estimaciones cortas y largas:
+
+```{r ch03-ovb}
+b1_short <- coef(model1)["educ"]
+b1_long  <- coef(model2)["educ"]
+b2_long  <- coef(model2)["exper"]
+b3_long  <- coef(model2)["tenure"]
+
+sesgo_predicho <- b2_long * delta_exper + b3_long * delta_tenure
+sesgo_observado <- b1_short - b1_long
+
+c(sesgo_predicho = sesgo_predicho,
+  diferencia_observada = sesgo_observado)
+```
+
+Los dos números deben coincidir hasta la precisión de coma flotante --- es la fórmula del SVO operando al nivel algebraico, no una aproximación. La pendiente de la regresión simple sobre `educ` difiere de la pendiente de la regresión múltiple en *exactamente* $\hat\beta_{\text{exper}}\tilde\delta_{\text{exper}} + \hat\beta_{\text{tenure}}\tilde\delta_{\text{tenure}}$.
+
+::: {.callout-note}
+## Por qué el sesgo es *negativo* aquí
+
+Tanto `exper` como `tenure` tienen retornos positivos ($\hat\beta_2, \hat\beta_3 > 0$). Pero `exper` está *negativamente* correlacionada con `educ` ($\tilde\delta_{\text{exper}} < 0$), y este efecto domina. El producto $\hat\beta_2\tilde\delta_{\text{exper}}$ es negativo; omitir la experiencia arrastra, pues, la pendiente de la regresión corta sobre `educ` *hacia abajo* respecto a la regresión larga. La tabla 2$\times$2 de signos de arriba captura este patrón con exactitud.
+:::
+
+### Multicolinealidad perfecta
+
+Ahora una violación deliberada de RLM.3. Imaginemos que medimos la educación en años (`educ`) y, además, creamos una copia redundante en meses (`educ_meses = 12 * educ`):
+
+```{r ch03-perfect-collinearity}
+wage1$educ_meses <- 12 * wage1$educ
+model_collinear <- lm(wage ~ educ + exper + tenure + educ_meses, data = wage1)
+summary(model_collinear)
+```
+
+R no se cae --- pero sí *descarta silenciosamente* `educ_meses` (su coeficiente aparece como `NA`). La razón es exactamente RLM.3: `educ_meses` es función lineal exacta de `educ`, así que la matriz de diseño $\mathbf{X}$ es deficiente de rango, $\mathbf{X}'\mathbf{X}$ es singular y $(\mathbf{X}'\mathbf{X})^{-1}$ no existe. No podemos saber si el «trabajo» lo hace un cambio unitario en `educ` o un cambio de 12 unidades en `educ_meses` --- los datos no contienen esa información.
+
+::: {.callout-warning}
+## Error frecuente: la trampa de «168 menos horas»
+
+Una versión más sutil del mismo problema: en una encuesta que registra las horas semanales trabajadas (`hours`), uno podría sentirse tentado a añadir la variable `resto = 168 - hours` («horas no trabajadas a la semana», puesto que $168 = 24\times 7$). El resultado es una relación lineal perfecta entre `hours`, `resto` y la constante: $\text{hours} + \text{resto} = 168$. Cualquier regresión que incluya las tres será deficiente de rango. Regla práctica: si puede escribir un regresor como función determinista de los demás (más la constante), está violando RLM.3.
+:::
+
+## Auto-evaluación {.unnumbered}
+
+Seis preguntas breves de elección múltiple. Intente cada una antes de desplegar la respuesta.
+
+::: {.callout-tip collapse="true"}
+## P1. Interpretación de una pendiente RLM
+
+En el modelo $y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + u$, el coeficiente $\beta_1$ mide:
+
+- A. El cambio total en $y$ cuando $x_1$ aumenta una unidad, incluyendo cualquier efecto indirecto a través de $x_2$.
+- B. El cambio esperado en $y$ ante un aumento unitario de $x_1$, manteniendo fijo $x_2$.
+- C. La correlación entre $y$ y $x_1$.
+- D. El cambio en $y$ cuando $x_1$ y $x_2$ suben ambos en una unidad.
+
+**Respuesta: B.** Toda pendiente RLM es un efecto parcial: aísla la variación de $y$ asociada a $x_1$ una vez mantenidos fijos los demás regresores del modelo.
+:::
+
+::: {.callout-tip collapse="true"}
+## P2. El supuesto de media condicional cero
+
+RLM.4 exige:
+
+- A. Únicamente $\operatorname{Cov}(x_1, u) = 0$.
+- B. $\operatorname{Var}(u\mid\mathbf{X}) = \sigma^2$.
+- C. $\mathbb{E}[u \mid x_1, x_2, \ldots, x_k] = 0$.
+- D. Que $u$ sea normal.
+
+**Respuesta: C.** RLM.4 es la condición de media condicional cero respecto a *todos* los regresores simultáneamente. Es lo que garantiza la insesgadez de MCO.
+:::
+
+::: {.callout-tip collapse="true"}
+## P3. Signo del SVO
+
+En una regresión salarial omitimos la habilidad innata. Supongamos que (i) los trabajadores más hábiles ganan más, manteniendo fija la educación, y (ii) los trabajadores más hábiles adquieren más educación. El coeficiente MCO sobre `educ` estará:
+
+- A. Sesgado hacia abajo.
+- B. Insesgado --- MCO siempre lo es.
+- C. Sesgado hacia arriba (sobreestimando el rendimiento de la educación).
+- D. Con signo indeterminado.
+
+**Respuesta: C.** Con $\beta_{\text{habilidad}} > 0$ y $\tilde\delta_{\text{educ}} > 0$, el sesgo $\beta_2\tilde\delta_1$ es positivo: la regresión corta sobreestima el rendimiento de la escolaridad.
+:::
+
+::: {.callout-tip collapse="true"}
+## P4. ¿Qué supuesto descarta la colinealidad perfecta?
+
+- A. RLM.1 (linealidad en parámetros).
+- B. RLM.3 (no relación lineal exacta entre regresores).
+- C. RLM.4 (media condicional cero).
+- D. RLM.5 (homocedasticidad).
+
+**Respuesta: B.** RLM.3 es el supuesto de invertibilidad de $\mathbf{X}'\mathbf{X}$. Violarlo deja la fórmula MCO indefinida; R descartará una de las variables conflictivas e informará `NA`.
+:::
+
+::: {.callout-tip collapse="true"}
+## P5. $R^2$ frente a $R^2$ ajustado
+
+¿Qué afirmación es verdadera cuando se añade un regresor irrelevante a un modelo?
+
+- A. Tanto $R^2$ como $R^2$ ajustado siempre suben.
+- B. $R^2$ siempre sube (en sentido débil), pero $R^2$ ajustado puede bajar.
+- C. $R^2$ puede bajar, pero $R^2$ ajustado siempre sube.
+- D. Ambos siempre bajan.
+
+**Respuesta: B.** El $R^2$ no puede disminuir porque MCO siempre podría fijar el nuevo coeficiente a cero. El $R^2$ ajustado resta una penalización por parámetro; si la variable nueva no mejora suficientemente el ajuste, la penalización gana.
+:::
+
+::: {.callout-tip collapse="true"}
+## P6. ¿Cuándo es nulo el SVO?
+
+El SVO sobre la pendiente de $x_1$ es exactamente cero cuando:
+
+- A. El tamaño muestral es grande.
+- B. El $R^2$ supera 0,5.
+- C. O bien la variable omitida no afecta a $y$, o bien no está correlacionada con $x_1$.
+- D. Los errores son normales.
+
+**Respuesta: C.** La fórmula del SVO $\beta_2\tilde\delta_1$ se anula siempre que uno de los dos factores sea cero. Ni muestras grandes ni un $R^2$ alto corrigen el sesgo de variable omitida.
+:::
+
+## Ejercicios {.unnumbered}
+
+**Ejercicio 3.1 ★ --- Interpretar una RLM estimada.** Un investigador reporta
+$$
+\widehat{\text{wage}} = -2{,}87 + 0{,}599\,\text{educ} + 0{,}022\,\text{exper} + 0{,}169\,\text{tenure}
+$$
+estimada sobre `wage1`. (a) Interprete cada coeficiente de pendiente en lenguaje llano. (b) Prediga el salario por hora de un trabajador con 16 años de educación, 5 años de experiencia y 3 de antigüedad. (c) ¿Por qué *no* debe leer $\hat\beta_1 = 0{,}599$ como el rendimiento causal de la escolaridad?
+
+::: {.callout-tip collapse="true"}
+## Ver respuesta
+
+(a) Cada pendiente es un efecto parcial: un año adicional de educación se asocia con 0,60 USD/hora más, *manteniendo fijas experiencia y antigüedad*; análogamente para `exper` y `tenure`. (b) $\widehat{\text{wage}} = -2{,}87 + 0{,}599\cdot 16 + 0{,}022\cdot 5 + 0{,}169\cdot 3 \approx 7{,}32$ USD/hora. (c) Porque es improbable que RLM.4 se cumpla aquí --- la habilidad, el entorno familiar y la calidad escolar siguen en $u$ y están correlacionadas con `educ`. La pendiente es el mejor resumen lineal *dentro* del modelo, no un coeficiente causal.
+:::
+
+**Ejercicio 3.2 ★ --- Detectar colinealidad perfecta.** Para cada uno de los siguientes conjuntos de regresores, decida si se viola RLM.3. Si es así, identifique la dependencia lineal exacta.
+
+(a) `{const, age, age_squared}`.
+(b) `{const, female, male}`, donde `male = 1 - female`.
+(c) `{const, exper, tenure, exper + tenure}`.
+(d) `{const, educ, log(educ)}` --- suponga `educ > 0`.
+
+::: {.callout-tip collapse="true"}
+## Ver respuesta
+
+(a) No hay violación: $\text{age}^2$ no es función *lineal* de `age`. (b) Violación: `female + male = 1`, la columna constante. (c) Violación: el cuarto regresor es la suma del segundo y el tercero. (d) No hay violación: $\log$ es no lineal, así que RLM.3 se mantiene (aunque una alta colinealidad puede inflar las varianzas).
+:::
+
+**Ejercicio 3.3 ★ --- Signo del SVO a partir de la teoría.** Desea estimar el efecto de la asistencia a clase sobre la nota final pero omite el *esfuerzo del estudiante*. Suponga que el esfuerzo eleva la nota y está positivamente correlacionado con la asistencia. Prediga el signo del sesgo sobre el coeficiente de asistencia en una regresión corta que omita el esfuerzo y explíquelo en una frase.
+
+::: {.callout-tip collapse="true"}
+## Ver respuesta
+
+Con $\beta_{\text{esfuerzo}} > 0$ y $\tilde\delta_{\text{asistencia}} > 0$, el sesgo $\beta_2\tilde\delta_1$ es **positivo**: la regresión corta sobreestima el efecto de la asistencia porque parte del efecto aparente es, en realidad, el efecto del esfuerzo (no observado) correlacionado con la asistencia.
+:::
+
+**Ejercicio 3.4 ★ --- $R^2$ ajustado que cae.** Construya un pequeño ejemplo numérico (o argumente analíticamente) que muestre cómo añadir un regresor irrelevante puede dejar el $R^2$ prácticamente invariable mientras hace caer el $R^2$ ajustado. Use la identidad $\bar R^2 = 1 - (n-1)(1-R^2)/(n-k-1)$ para explicar por qué.
+
+::: {.callout-tip collapse="true"}
+## Ver respuesta
+
+Con $n = 100$, suponga $R^2 = 0{,}30$ con $k = 3$ regresores: $\bar R^2 = 1 - 99\cdot 0{,}70/96 \approx 0{,}278$. Añadimos un cuarto regresor irrelevante que eleva $R^2$ a $0{,}301$: $\bar R^2 = 1 - 99\cdot 0{,}699/95 \approx 0{,}272$. El $R^2$ sube 0,001 pero $\bar R^2$ *baja* 0,006 porque $(n-1)/(n-k-1)$ crece más rápido de lo que decrece $1-R^2$. Este es el sentido formal en que el $\bar R^2$ penaliza la complejidad.
+:::
+
+**Ejercicio 3.5 ★★ --- SVO por simulación.** Genere $n=1000$ observaciones del modelo $y = 1 + 2x_1 + 3x_2 + u$, con $x_1 \sim \mathcal{N}(0,1)$, $x_2 = 0{,}5\,x_1 + 0{,}5\,z$, $z\sim\mathcal{N}(0,1)$ independiente de $x_1$, y $u \sim \mathcal{N}(0,1)$ independiente de todo lo demás. (a) Estime la regresión corta de $y$ sobre $x_1$ solo y la regresión larga de $y$ sobre $(x_1, x_2)$. (b) Use la fórmula del SVO para predecir la diferencia entre las dos pendientes sobre $x_1$ y verifíquela numéricamente. Pista: $\tilde\delta_1 = 0{,}5$ por construcción.
+
+*La respuesta completa figura en la edición del docente.*
+
+**Ejercicio 3.6 ★★★ --- Particionamiento de Frisch--Waugh--Lovell.** Sea $\tilde x_1$ los residuos de regresar $x_1$ sobre los demás regresores $(x_2,\ldots,x_k)$ y la constante. Demuestre, usando las ecuaciones normales de MCO, que el coeficiente de la regresión múltiple sobre $x_1$ coincide con la pendiente de una regresión simple de $y$ sobre $\tilde x_1$. Verifique su deducción numéricamente con `wage1`: regrese `educ` sobre `exper` y `tenure`, conserve los residuos y compruebe que regresar `wage` sobre esos residuos reproduce $\hat\beta_{\text{educ}}$ de la regresión larga de §3.10.
+
+*La respuesta completa figura en la edición del docente.*
+
+Autoevaluación interactiva: `LEARNR/03_multiple_linear_regression.Rmd`.

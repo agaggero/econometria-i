@@ -1,0 +1,582 @@
+---
+title: "Inferencia"
+---
+
+> *Estado: portado 2026-05-18. Revisión editorial: pendiente.*
+
+## Objetivos {.unnumbered}
+
+Al terminar este capítulo, el lector debería ser capaz de:
+
+- Enunciar los supuestos del Modelo Lineal Clásico (RLM.1--RLM.6) y explicar qué añade el supuesto de normalidad RLM.6 a Gauss--Markov.
+- Derivar la distribución muestral de $\hat{\beta}_j$ bajo el MLC y explicar por qué la estandarización conduce a un estadístico $t_{n-k-1}$ en lugar de una normal estándar.
+- Construir e interpretar un intervalo de confianza del $(1-\alpha)\times 100\%$ para un coeficiente individual.
+- Ejecutar un contraste de hipótesis en cuatro pasos (bilateral y unilateral) para un coeficiente individual, y leer el $p$-valor correspondiente.
+- Realizar un contraste $F$ de significatividad conjunta, distinguiendo el $F$ global del contraste restringido frente a no restringido.
+- Reproducir todo lo anterior en R utilizando `summary()`, `confint()`, `qt()`, `qf()`, `pt()`, `pf()`, `anova()` y aritmética manual sobre el modelo ajustado.
+
+## Pregunta motivadora {.unnumbered}
+
+> *Una vez que mantenemos fijas educación, experiencia y edad, ¿importan **conjuntamente** la puntuación de `IQ` y los años de escolarización para el salario mensual --- o podría haber surgido por azar la aportación aparente de la habilidad cognitiva y la educación?*
+
+Vimos `IQ` brevemente en el Capítulo 3 como candidato a *proxy* de la habilidad no observada. Ahora debemos decidir, formalmente, si los coeficientes que estimamos están lo bastante alejados de cero como para tomarlos en serio. Las herramientas del capítulo --- estadísticos $t$, $p$-valores, intervalos de confianza y test $F$ --- están diseñadas precisamente para esa decisión.
+
+## 4.1 De la estimación a la inferencia
+
+Los Capítulos 2 y 3 produjeron **estimaciones puntuales** $\hat{\beta}_j$ a partir de una muestra. Estos números son aleatorios: una muestra distinta habría dado números distintos. La cuestión de la inferencia es si lo que aprendimos de *nuestra* muestra nos permite decir algo creíble sobre el parámetro poblacional desconocido $\beta_j$.
+
+La inferencia estadística proporciona dos herramientas complementarias [@wooldridge2020]:
+
+1. **Intervalos de confianza.** Un rango de valores plausibles para el parámetro desconocido, con una probabilidad de cobertura calibrada a largo plazo.
+2. **Contrastes de hipótesis.** Un procedimiento formal para decidir si los datos son compatibles con una afirmación específica sobre el parámetro --- la más frecuente, que el parámetro es igual a cero.
+
+Ambas herramientas dependen de conocer la *distribución muestral* de $\hat{\beta}_j$. Bajo Gauss--Markov solo conocemos su media ($\beta_j$) y su varianza; no conocemos su forma. Para decir algo preciso sobre probabilidades --- "la probabilidad de observar un coeficiente tan alejado de cero, si la verdad es cero, es inferior al 1%" --- necesitamos una distribución. Eso es lo que aporta el siguiente supuesto.
+
+## 4.2 Los supuestos del Modelo Lineal Clásico (MLC)
+
+Gauss--Markov nos dio insesgadez, una varianza con forma cerrada y la propiedad BLUE (ELIO) de MCO. Para inferencia exacta (en muestras finitas) necesitamos un supuesto adicional.
+
+::: {.callout-note}
+## Definición: RLM.6 (Normalidad del término de error)
+
+Condicional a los regresores $\mathbf{X}$, el error poblacional $u$ se distribuye normalmente con media cero y varianza constante:
+
+$$
+u \mid \mathbf{X} \;\sim\; \mathcal{N}(0,\,\sigma^2).
+$$
+
+El conjunto completo RLM.1--RLM.6 se denomina **supuestos del Modelo Lineal Clásico (MLC)**.
+:::
+
+¿Por qué normalidad, y de dónde sale? En muchos contextos aplicados $u$ es la suma de un gran número de factores omitidos pequeños e independientes, y un razonamiento basado en el teorema central del límite sugiere que su distribución debería ser aproximadamente acampanada. El supuesto es fuerte: puede fallar gravemente con variables dependientes sesgadas como salarios o conteos. Veremos en el Capítulo 6 que tomar $\log$ de la variable dependiente suele bastar para que los residuos parezcan simétricos.
+
+La recompensa es grande. Bajo RLM.1--RLM.6, el estimador MCO hereda la normalidad de $u$:
+
+$$
+\hat{\beta}_j \mid \mathbf{X} \;\sim\; \mathcal{N}\!\left(\beta_j,\,\operatorname{Var}(\hat{\beta}_j)\right).
+$$
+
+Esta es una afirmación *exacta* que se cumple para cualquier tamaño muestral, no solo asintóticamente. Con $n$ grande, el teorema central del límite proporciona aproximadamente la misma conclusión incluso sin RLM.6, pero solo el MLC nos da inferencia exacta en muestras pequeñas.
+
+::: {.callout-warning}
+## Error frecuente: confundir la normalidad de $u$ con la normalidad de $y$
+
+RLM.6 es una afirmación sobre el *error* $u$, condicional a los regresores. **No** es la afirmación de que la distribución marginal de $y$ sea normal. Los salarios, por ejemplo, son asimétricos a la derecha; eso no contradice por sí mismo RLM.6, porque la componente sistemática $\beta_0 + \beta_1 x_1 + \cdots$ puede absorber la asimetría.
+:::
+
+## 4.3 La distribución $t$
+
+Si $\sigma^2$ fuera conocida podríamos estandarizar $\hat{\beta}_j$ directamente:
+
+$$
+Z \;=\; \frac{\hat{\beta}_j - \beta_j}{\sqrt{\operatorname{Var}(\hat{\beta}_j)}} \;\sim\; \mathcal{N}(0,1).
+$$
+
+En la práctica $\sigma^2$ es desconocida y se sustituye por el estimador MCO $\hat{\sigma}^2 = \mathrm{SSR}/(n-k-1)$. Sustituir $\hat{\sigma}^2$ en el error estándar introduce una fuente adicional de variabilidad, y el estadístico estandarizado deja de ser normal estándar: se distribuye según una **$t$** con $n-k-1$ grados de libertad,
+
+$$
+t \;=\; \frac{\hat{\beta}_j - \beta_j}{\operatorname{se}(\hat{\beta}_j)} \;\sim\; t_{\,n-k-1}.
+$$
+
+La distribución $t$ es simétrica, acampanada y centrada en cero, pero tiene **colas más pesadas** que $\mathcal{N}(0,1)$ --- reflejo de la incertidumbre adicional al estimar $\sigma^2$. A medida que los grados de libertad $n-k-1$ crecen, las colas se adelgazan y $t_{n-k-1}$ converge a $\mathcal{N}(0,1)$. Para $n-k-1 \geq 120$ las dos distribuciones son prácticamente indistinguibles; en muestras pequeñas la $t$ es notablemente más ancha.
+
+Esa es toda la razón por la que este capítulo usa valores críticos $t$ como $2{,}013$ (para $\alpha = 0{,}05$, $df = 45$) en lugar del familiar $1{,}96$ de la tabla normal.
+
+## 4.4 Intervalos de confianza
+
+::: {.callout-note}
+## Definición: intervalo de confianza para $\beta_j$
+
+Un intervalo de confianza del $(1-\alpha)\times 100\%$ para $\beta_j$ es
+
+$$
+\hat{\beta}_j \;\pm\; t_{\alpha/2,\,n-k-1}\,\cdot\,\operatorname{se}(\hat{\beta}_j),
+$$
+
+donde $t_{\alpha/2,\,n-k-1}$ es el valor crítico de la distribución $t$ que deja probabilidad $\alpha/2$ en cada cola.
+:::
+
+Para el intervalo del 95% canónico, $\alpha = 0{,}05$ y el valor crítico es $t_{0{,}025,\,n-k-1}$. Con muestras moderadamente grandes éste se acerca a $1{,}96$, pero en muestras pequeñas puede ser apreciablemente mayor.
+
+::: {.callout-warning}
+## Error frecuente: malinterpretar el "95%"
+
+Un intervalo de confianza del 95% es una afirmación sobre el **procedimiento**, no sobre el intervalo concreto. Si extrajésemos muchas muestras independientes y construyésemos un intervalo en cada una, aproximadamente el 95% de esos intervalos contendrían el verdadero $\beta_j$. **No** es correcto decir que hay un 95% de probabilidad de que el intervalo concreto $[L, U]$ que hemos calculado de nuestra única muestra contenga $\beta_j$ --- $\beta_j$ es un número fijo (aunque desconocido), y el intervalo realizado o lo cubre o no lo cubre.
+:::
+
+Los intervalos de confianza y los contrastes de hipótesis bilaterales son dos caras de la misma moneda: un IC del $(1-\alpha)$ para $\beta_j$ contiene cero **si y solo si** el test $t$ bilateral de $H_0:\beta_j = 0$ al nivel $\alpha$ no rechaza.
+
+## 4.5 Contraste de hipótesis en cuatro pasos
+
+Contrastamos afirmaciones sobre un único coeficiente $\beta_j$ usando un procedimiento estándar en cuatro pasos. Sea $c$ el valor hipotetizado (habitualmente $c = 0$, "la variable no importa").
+
+**Paso 1. Plantear $H_0$ y $H_1$.** Hay tres formas útiles:
+
+- *Bilateral:* $H_0: \beta_j = c$ frente a $H_1: \beta_j \neq c$.
+- *Unilateral a la derecha:* $H_0: \beta_j \leq c$ frente a $H_1: \beta_j > c$.
+- *Unilateral a la izquierda:* $H_0: \beta_j \geq c$ frente a $H_1: \beta_j < c$.
+
+La elección entre unilateral y bilateral viene determinada por la **teoría económica**, no por los datos: si la teoría nos dice *a priori* que $\beta_j$ no puede ser negativo, procede un test unilateral.
+
+**Paso 2. Elegir un nivel de significación $\alpha$ y leer el valor crítico.** Las elecciones estándar son $\alpha = 0{,}10$, $0{,}05$, $0{,}01$. El valor crítico es
+
+- $t_{\alpha/2,\,n-k-1}$ para un test bilateral,
+- $t_{\alpha,\,n-k-1}$ para un test unilateral.
+
+**Paso 3. Calcular el estadístico $t$.**
+
+$$
+t \;=\; \frac{\hat{\beta}_j - c}{\operatorname{se}(\hat{\beta}_j)}.
+$$
+
+Para el caso por defecto $c = 0$ se reduce a $t = \hat{\beta}_j / \operatorname{se}(\hat{\beta}_j)$, que es exactamente el número que R muestra en la tercera columna de `summary(lm(...))`.
+
+**Paso 4. Comparar y concluir.**
+
+- Bilateral: rechazar $H_0$ si $|t| > t_{\alpha/2,\,n-k-1}$.
+- Unilateral a la derecha: rechazar $H_0$ si $t > t_{\alpha,\,n-k-1}$.
+- Unilateral a la izquierda: rechazar $H_0$ si $t < -t_{\alpha,\,n-k-1}$.
+
+Si rechazamos $H_0$ decimos que el coeficiente es *estadísticamente significativo* al nivel elegido. Si no rechazamos decimos que los datos son *compatibles con* $H_0$ --- nunca "aceptamos" $H_0$, porque el test se diseñó para detectar desviaciones, no para confirmarla.
+
+::: {.callout-warning}
+## Error frecuente: significatividad estadística no es significatividad económica
+
+Un coeficiente puede ser estadísticamente significativo ($p$-valor pequeño) pero económicamente diminuto, y un coeficiente puede ser económicamente grande pero estadísticamente no significativo en una muestra pequeña. Informe siempre de los dos aspectos: la *magnitud* de $\hat{\beta}_j$ en las unidades del problema y la precisión con la que se estima. Una rentabilidad del 1% por un año adicional de educación y otra del 10% son ambas "significativamente distintas de cero" en una muestra grande, pero solo una de ellas es relevante para la política pública.
+:::
+
+## 4.6 El $p$-valor
+
+El procedimiento de los cuatro pasos nos obliga a fijar $\alpha$ por adelantado. Una alternativa más informativa es presentar el $p$-valor.
+
+::: {.callout-note}
+## Definición: $p$-valor
+
+El $p$-valor es la probabilidad, calculada *bajo $H_0$*, de observar un estadístico al menos tan extremo como el que hemos obtenido. Equivalentemente, es el menor nivel de significación $\alpha$ al que rechazaríamos $H_0$.
+:::
+
+Para un test bilateral de $H_0:\beta_j = 0$ con estadístico calculado $t$,
+
+$$
+p \;=\; 2 \cdot \Pr\!\left(T_{n-k-1} > |t|\right) \;=\; 2\,\bigl[1 - F_t(|t|;\,n-k-1)\bigr],
+$$
+
+donde $F_t$ es la función de distribución de la $t_{n-k-1}$. Para un test unilateral el $p$-valor es exactamente la mitad del anterior (cuando el signo de $\hat{\beta}_j$ coincide con la alternativa).
+
+Reglas prácticas convencionales [@wooldridge2020]:
+
+- $p < 0{,}01$: evidencia fuerte contra $H_0$ (rechazar al nivel del 1%).
+- $p < 0{,}05$: evidencia contra $H_0$ (rechazar al nivel del 5%).
+- $p < 0{,}10$: evidencia débil contra $H_0$ (rechazar al nivel del 10%).
+- $p \geq 0{,}10$: evidencia insuficiente para rechazar $H_0$.
+
+R muestra $p$-valores bilaterales por defecto en la columna `Pr(>|t|)` de `summary(lm(...))`, junto con asteriscos de significatividad: `***` para $p < 0{,}001$, `**` para $p < 0{,}01$, `*` para $p < 0{,}05$, `.` para $p < 0{,}10$.
+
+::: {.callout-warning}
+## Error frecuente: un $p$-valor pequeño no es un certificado causal
+
+La significatividad estadística nos dice que es improbable que $\hat{\beta}_j$ haya surgido por ruido muestral si la verdad fuese cero. **No** dice nada sobre si $x_j$ *causa* $y$. La interpretación causal sigue exigiendo el supuesto poblacional $\mathbb{E}[u \mid \mathbf{X}] = 0$ (RLM.4) --- ningún $p$-valor, por pequeño que sea, puede salvar una regresión contaminada por sesgo de variable omitida o por causalidad inversa.
+:::
+
+## 4.7 El test $F$ de significatividad conjunta
+
+Los tests $t$ sobre un único coeficiente son la herramienta adecuada cuando tenemos un parámetro en mente. Sin embargo, a menudo la pregunta es si **varios** coeficientes son conjuntamente cero:
+
+- "¿Son `educ` *y* `IQ` conjuntamente irrelevantes para los salarios una vez que controlamos por horas, experiencia y edad?"
+- "¿Aportan algo al modelo los términos cuadráticos de un polinomio en `exper`?"
+- "¿Importa *alguno* de los regresores --- merece la pena correr la regresión global?"
+
+Estas son hipótesis conjuntas, y requieren un contraste conjunto. Hacer $q$ tests $t$ separados **no** responde a la pregunta conjunta, porque el tamaño del procedimiento combinado deja de ser $\alpha$, y porque dos coeficientes pueden ser conjuntamente informativos aun cuando cada uno sea individualmente marginal.
+
+### 4.7.1 Modelos restringido y no restringido
+
+Sea el modelo **no restringido** la regresión con $k$ pendientes,
+
+$$
+y = \beta_0 + \beta_1 x_1 + \cdots + \beta_k x_k + u.
+$$
+
+Supongamos que queremos contrastar que las últimas $q$ pendientes son cero,
+
+$$
+H_0:\;\beta_{k-q+1} = \beta_{k-q+2} = \cdots = \beta_k = 0,
+$$
+
+frente a la alternativa de que *al menos uno* de ellos sea distinto de cero. El modelo **restringido** impone $H_0$ eliminando esos $q$ regresores:
+
+$$
+y = \beta_0 + \beta_1 x_1 + \cdots + \beta_{k-q} x_{k-q} + u.
+$$
+
+Sean $\mathrm{SSR}_U$ y $\mathrm{SSR}_R$ las sumas de cuadrados de los residuos de los modelos no restringido y restringido. Como eliminar regresores nunca reduce la SSR, siempre se cumple $\mathrm{SSR}_R \geq \mathrm{SSR}_U$; la cuestión es si la *brecha* es suficientemente grande para ser incompatible con $H_0$.
+
+::: {.callout-note}
+## Definición: el estadístico $F$
+
+Bajo $H_0$ y RLM.1--RLM.6,
+
+$$
+F \;=\; \frac{(\mathrm{SSR}_R - \mathrm{SSR}_U)/q}{\mathrm{SSR}_U/(n-k-1)} \;\sim\; F_{q,\,n-k-1}.
+$$
+
+Rechazar $H_0$ al nivel $\alpha$ si $F > F_{q,\,n-k-1,\,\alpha}$, el valor crítico superior-$\alpha$ de la distribución $F$ con $q$ y $n-k-1$ grados de libertad.
+:::
+
+Una formulación equivalente utiliza el $R^2$ de cada modelo:
+
+$$
+F \;=\; \frac{(R^2_U - R^2_R)/q}{(1 - R^2_U)/(n-k-1)}.
+$$
+
+Ambas fórmulas son algebraicamente idénticas siempre que $y$ sea la misma en ambas regresiones; difieren solo cuando el modelo restringido tiene una variable dependiente distinta (por ejemplo, un contraste $F$ de $\log y$ frente a $y$, que la fórmula anterior **no** cubre).
+
+### 4.7.2 El test $F$ global
+
+Un caso particular es el contraste de que **todas** las pendientes son cero,
+
+$$
+H_0:\;\beta_1 = \beta_2 = \cdots = \beta_k = 0.
+$$
+
+Aquí el modelo restringido es la regresión sobre una constante, y $R^2_R = 0$. El estadístico $F$ se reduce a
+
+$$
+F \;=\; \frac{R^2/k}{(1-R^2)/(n-k-1)},
+$$
+
+que es exactamente el número que R imprime en la línea final de `summary(lm(...))` bajo "F-statistic", junto con su $p$-valor.
+
+### 4.7.3 $F$ frente a $t$: una identidad útil
+
+Para una *única* restricción ($q = 1$), el estadístico $F$ es igual al cuadrado del estadístico $t$ correspondiente:
+
+$$
+F \;=\; t^2, \qquad F_{1,\,n-k-1} \;=\; \bigl(t_{n-k-1}\bigr)^2.
+$$
+
+Los contrastes $t$ y $F$ ofrecen conclusiones idénticas en este caso; la maquinaria $F$ solo resulta estrictamente necesaria cuando $q \geq 2$.
+
+## 4.8 Práctica: Inferencia en R
+
+Trabajamos con `wage2` del paquete **wooldridge**: una sección cruzada de $n = 935$ hombres estadounidenses procedentes del *National Longitudinal Survey* de 1980, con información sobre salario mensual (`wage`), horas semanales (`hours`), una puntuación en un test de cociente intelectual (`IQ`), años de escolarización (`educ`), años de experiencia laboral (`exper`), antigüedad en el empleo actual (`tenure`) y edad. El objetivo es trasladar la maquinaria inferencial de los cuatro pasos a órdenes de R y luego comprobar que los atajos integrados dan las mismas respuestas.
+
+```{r ch04-setup}
+#| message: false
+library(wooldridge)
+data("wage2")
+```
+
+### Una primera regresión y su `summary()`
+
+Empezamos con una regresión simple de salario mensual sobre horas semanales:
+
+```{r ch04-model1}
+model1 <- lm(wage ~ hours, data = wage2)
+summary(model1)
+```
+
+El bloque `summary()` informa, para cada coeficiente, de la estimación $\hat{\beta}_j$, su error estándar $\operatorname{se}(\hat{\beta}_j)$, el estadístico $t$ $\hat{\beta}_j/\operatorname{se}(\hat{\beta}_j)$ y el $p$-valor bilateral. Al pie vemos el estadístico $F$ global y su $p$-valor, que contrastan $H_0: \beta_{\text{hours}} = 0$ en este caso con un único regresor.
+
+Pasemos ahora a una especificación más rica:
+
+```{r ch04-model2}
+model2 <- lm(wage ~ hours + educ + exper + IQ + age, data = wage2)
+summary(model2)
+```
+
+Leemos la tabla línea por línea: `educ` e `IQ` tienen estadísticos $t$ grandes y $p$-valores diminutos, así que cada uno es individualmente significativo al nivel del 1% incluso tras controlar por los demás. `hours` es negativa y significativa (los hombres que trabajan más horas ganan ligeramente menos *por hora trabajada a la semana*, condicional al resto de covariables --- una pista de que las horas correlacionan con la composición ocupacional). `exper` y `age` resultan estadísticamente indistinguibles de cero en esta especificación.
+
+### Intervalos de confianza manuales con `qt()`
+
+Extraemos coeficientes y errores estándar de manera programática y construimos un IC del 95% a mano.
+
+```{r ch04-ci-manual}
+beta_hat <- coef(model2)
+se_hat   <- summary(model2)$coefficients[, "Std. Error"]
+
+n  <- nobs(model2)
+k  <- length(beta_hat) - 1     # número de coeficientes pendiente
+df <- n - k - 1
+
+t_crit <- qt(0.975, df)
+t_crit                           # valor crítico t_{0.025, df}
+```
+
+El valor crítico se acerca a $1{,}96$ porque los grados de libertad son grandes, pero no es idéntico. El IC manual del 95% para $\beta_{\text{IQ}}$ es
+
+```{r ch04-ci-iq}
+IQ_LB <- beta_hat["IQ"] - t_crit * se_hat["IQ"]
+IQ_UB <- beta_hat["IQ"] + t_crit * se_hat["IQ"]
+c(lower = IQ_LB, upper = IQ_UB)
+```
+
+y para $\beta_{\text{hours}}$:
+
+```{r ch04-ci-hours}
+hours_LB <- beta_hat["hours"] - t_crit * se_hat["hours"]
+hours_UB <- beta_hat["hours"] + t_crit * se_hat["hours"]
+c(lower = hours_LB, upper = hours_UB)
+```
+
+El atajo integrado entrega todos los intervalos en una llamada:
+
+```{r ch04-confint}
+confint(model2, level = 0.95)
+```
+
+Los números de las filas `IQ` y `hours` coinciden con lo que calculamos manualmente. Obsérvese que el intervalo del 95% para `IQ` excluye el cero (coherente con el $p$-valor pequeño en `summary()`), mientras que los intervalos para `exper` y `age` sí contienen cero (coherente con su no significatividad).
+
+### Test $t$ manual para un coeficiente individual
+
+Supongamos que queremos contrastar $H_0: \beta_{\text{educ}} = 0$ frente a la alternativa bilateral al nivel del 5%. Paso a paso:
+
+```{r ch04-ttest-manual}
+b_educ  <- coef(model2)["educ"]
+se_educ <- summary(model2)$coefficients["educ", "Std. Error"]
+
+t_stat  <- b_educ / se_educ
+p_value <- 2 * pt(-abs(t_stat), df)   # p-valor bilateral
+
+c(t = t_stat, p = p_value)
+summary(model2)$coefficients["educ", c("t value", "Pr(>|t|)")]
+```
+
+Las dos últimas líneas son idénticas (salvo redondeo): el cálculo manual reproduce exactamente lo que imprime R. El estadístico $t$ está muy por encima del valor crítico del 5%, aproximadamente $1{,}96$, así que rechazamos $H_0$. La educación tiene un efecto parcial estadísticamente significativo sobre los ingresos mensuales incluso tras controlar por horas, experiencia, cociente intelectual y edad.
+
+### Test $F$ manual de significatividad conjunta
+
+Pasemos a la pregunta principal del capítulo: ¿son `educ` e `IQ` *conjuntamente* relevantes una vez que `hours`, `exper` y `age` están en el modelo? Formalmente,
+
+$$
+H_0:\;\beta_{\text{educ}} = \beta_{\text{IQ}} = 0
+\quad\text{frente a}\quad H_1:\;\text{al menos uno de ellos }\neq 0,
+$$
+
+así que $q = 2$.
+
+El modelo no restringido es `model2`. El modelo restringido suprime `educ` e `IQ`:
+
+```{r ch04-restricted}
+model3 <- lm(wage ~ hours + exper + age, data = wage2)
+summary(model3)
+```
+
+Calculamos las SSR a mano:
+
+```{r ch04-ssr}
+SSR_u <- sum(residuals(model2)^2)
+SSR_r <- sum(residuals(model3)^2)
+c(SSR_unrestricted = SSR_u, SSR_restricted = SSR_r)
+```
+
+Ahora el estadístico $F$:
+
+```{r ch04-fstat}
+q    <- 2                # restricciones
+df_u <- n - k - 1        # gl del modelo no restringido
+
+F_stat <- ((SSR_r - SSR_u) / q) / (SSR_u / df_u)
+F_crit <- qf(0.95, df1 = q, df2 = df_u)
+p_val  <- 1 - pf(F_stat, df1 = q, df2 = df_u)
+
+c(F = F_stat, F_crit_5pct = F_crit, p = p_val)
+```
+
+El estadístico $F$ está muy por encima del valor crítico del 5% y el $p$-valor es esencialmente cero, así que rechazamos contundentemente $H_0$: `educ` e `IQ` son determinantes conjuntamente significativos de `wage`.
+
+R proporciona el mismo contraste en una sola línea mediante `anova()`, que compara dos modelos anidados:
+
+```{r ch04-anova}
+anova(model3, model2)
+```
+
+Las columnas `F` y `Pr(>F)` reproducen el cálculo manual. Informar del test $F$ con `anova()` es el flujo de trabajo recomendado; la derivación manual importa porque permite ver con precisión *qué se está comparando*.
+
+### $F = t^2$ en un contraste con una sola restricción
+
+La identidad del final del §4.7 es fácil de comprobar numéricamente. Contrastamos $H_0: \beta_{\text{educ}} = 0$ por los dos caminos:
+
+```{r ch04-f-equals-t2}
+t_educ <- summary(model2)$coefficients["educ", "t value"]
+
+mR <- lm(wage ~ hours + exper + IQ + age, data = wage2)   # quitar solo educ
+ft <- anova(mR, model2)
+F_single <- ft$F[2]
+
+c(t_squared = t_educ^2, F = F_single)
+```
+
+Los dos números coinciden, como predice el álgebra.
+
+### Unilateral frente a bilateral
+
+Supongamos que la teoría nos dice que un año adicional de experiencia no puede reducir los ingresos mensuales, de modo que la alternativa relevante es *unilateral a la derecha*: $H_0: \beta_{\text{exper}} \leq 0$ frente a $H_1: \beta_{\text{exper}} > 0$. El mismo estadístico $t$ alimenta un $p$-valor distinto:
+
+```{r ch04-onesided}
+co <- summary(model2)$coefficients["exper", ]
+t_exper <- co["t value"]
+
+p_one_sided <- 1 - pt(t_exper, df)         # cola derecha
+p_two_sided <- 2 * pt(-abs(t_exper), df)   # por defecto en summary()
+
+c(t = t_exper, p_one_sided = p_one_sided, p_two_sided = p_two_sided)
+```
+
+Cuando $t > 0$ y la alternativa está en la derecha, el $p$-valor unilateral es exactamente la mitad del bilateral. Un coeficiente marginal con el test bilateral por defecto puede pasar a ser claramente significativo en cuanto estemos dispuestos a comprometernos con un signo *a priori* --- pero ese compromiso debe venir de la economía, no de fisgonear primero en los datos.
+
+## Auto-evaluación {.unnumbered}
+
+Seis preguntas cortas de opción múltiple. Inténtelas antes de abrir la respuesta.
+
+::: {.callout-tip collapse="true"}
+## P1. Qué nos aporta RLM.6
+
+Añadir RLM.6 (normalidad de $u$) a los supuestos de Gauss--Markov nos permite:
+
+- A. Demostrar que MCO es insesgado.
+- B. Demostrar que MCO tiene la menor varianza entre los estimadores lineales insesgados.
+- C. Derivar la distribución *exacta* en muestras finitas de $\hat{\beta}_j$ y realizar tests $t$ y $F$ con cualquier tamaño muestral.
+- D. Estimar $\sigma^2$.
+
+**Respuesta: C.** La insesgadez (A) se sigue de RLM.1--RLM.4; la propiedad BLUE (B) de RLM.1--RLM.5; el estimador $\hat{\sigma}^2$ (D) está definido sin necesidad de RLM.6. Solo RLM.6 nos da normalidad *exacta* de $\hat{\beta}_j$ y, por tanto, inferencia $t$ y $F$ exacta en muestras finitas.
+:::
+
+::: {.callout-tip collapse="true"}
+## P2. ¿Por qué $t$ y no $z$?
+
+Bajo RLM.1--RLM.6 usamos $t_{n-k-1}$ en lugar de $\mathcal{N}(0,1)$ para inferencia sobre un coeficiente individual porque:
+
+- A. MCO es sesgado en muestras finitas.
+- B. El error estándar utiliza una $\hat{\sigma}^2$ *estimada*, y el estadístico estandarizado resultante tiene colas más pesadas que la normal estándar.
+- C. El término de error es heteroscedástico.
+- D. Los regresores son no estocásticos.
+
+**Respuesta: B.** Sustituir la $\sigma$ desconocida en el error estándar por $\hat{\sigma}$ introduce variabilidad adicional que la distribución $t$ contabiliza. A medida que $n - k - 1 \to \infty$, la $t$ converge a la normal estándar.
+:::
+
+::: {.callout-tip collapse="true"}
+## P3. Un intervalo de confianza del 95%
+
+Un intervalo de confianza del 95% para $\beta_j$ que excluye el cero implica:
+
+- A. El test $t$ bilateral de $H_0:\beta_j = 0$ rechaza al nivel del 5%.
+- B. El verdadero $\beta_j$ es definitivamente distinto de cero.
+- C. El coeficiente estimado es económicamente grande.
+- D. MCO es insesgado.
+
+**Respuesta: A.** Un IC y un test bilateral al nivel correspondiente son algebraicamente equivalentes: el IC excluye el valor nulo si y solo si el test rechaza. El IC no dice nada sobre magnitud (C) ni sobre el sesgo de MCO (D), y una única muestra no puede certificar (B).
+:::
+
+::: {.callout-tip collapse="true"}
+## P4. Lectura de un $p$-valor
+
+Un coeficiente tiene un $p$-valor bilateral de $0{,}03$. ¿Qué afirmación es correcta?
+
+- A. Es estadísticamente significativo al nivel del 5% pero no al del 1%.
+- B. Es significativo a todos los niveles convencionales.
+- C. No es significativo al nivel del 5%.
+- D. El coeficiente es económicamente importante.
+
+**Respuesta: A.** Recuérdese que $p$ es el menor $\alpha$ al que se rechaza; $0{,}01 < 0{,}03 < 0{,}05$ sitúa la significatividad entre los niveles del 1% y el 5%. La significatividad estadística no contiene información sobre la magnitud económica.
+:::
+
+::: {.callout-tip collapse="true"}
+## P5. El estadístico $F$
+
+Para contrastar $H_0:\beta_1 = \beta_2 = 0$ conjuntamente en una regresión con $k$ pendientes y tamaño muestral $n$, utilizamos:
+
+- A. Dos tests $t$ separados, uno para cada coeficiente.
+- B. $F = \dfrac{(\mathrm{SSR}_R - \mathrm{SSR}_U)/q}{\mathrm{SSR}_U/(n-k-1)}$, con distribución $F_{q,\,n-k-1}$ bajo $H_0$.
+- C. Un test $\chi^2$ sobre $\hat{\beta}_1 + \hat{\beta}_2$.
+- D. Un test $z$, comparando la suma de las estimaciones con $1{,}96$.
+
+**Respuesta: B.** Los tests $t$ separados no controlan el tamaño del procedimiento conjunto y pasan por alto el caso en que dos regresores son individualmente débiles pero conjuntamente informativos.
+:::
+
+::: {.callout-tip collapse="true"}
+## P6. Significatividad frente a causalidad
+
+Un regresor $x_j$ tiene un coeficiente con $p < 0{,}001$. ¿Cuál de las siguientes afirmaciones es cierta?
+
+- A. Un $p$-valor pequeño descarta el sesgo de variable omitida.
+- B. La significatividad estadística demuestra que $x_j$ causa $y$.
+- C. Significatividad estadística e identificación causal son equivalentes.
+- D. El $p$-valor nos dice que es poco probable que $\hat{\beta}_j$ sea cero por azar, pero no dice nada sobre si $x_j$ *causa* $y$ --- la identificación causal sigue exigiendo $\mathbb{E}[u\mid \mathbf{X}] = 0$.
+
+**Respuesta: D.** La §4.6 es explícita: la inferencia consiste en descartar el ruido muestral, no la confusión.
+:::
+
+## Ejercicios {.unnumbered}
+
+**Ejercicio 4.1 ★ --- Lectura de una salida de `summary()`.** Usando el conjunto de datos `wage2`, estime el modelo
+
+$$
+\mathrm{wage} = \beta_0 + \beta_1\,\mathrm{educ} + \beta_2\,\mathrm{exper} + \beta_3\,\mathrm{tenure} + u
+$$
+
+con `lm()` e inspeccione `summary()`. (a) ¿Qué coeficientes son significativos al nivel del 5%? (b) Indique la magnitud *y* el error estándar de $\hat{\beta}_1$; ¿cuál es su interpretación económica? (c) Enuncie la hipótesis nula que contrasta el estadístico $F$ global situado al pie de `summary()`.
+
+::: {.callout-tip collapse="true"}
+## Mostrar respuesta
+
+(a) Las tres pendientes son positivas y tienen $p$-valores muy por debajo de $0{,}05$ (cada estadístico $t$ supera holgadamente $2$ en valor absoluto), de manera que `educ`, `exper` y `tenure` son individualmente significativas al nivel del 5%. (b) $\hat{\beta}_1$ es aproximadamente de 60 dólares mensuales por año adicional de escolarización, con un error estándar en torno a 6 --- un efecto a la vez estadísticamente y económicamente relevante. (c) El estadístico $F$ global contrasta $H_0:\beta_1 = \beta_2 = \beta_3 = 0$ (ningún regresor importa) frente a la alternativa de que al menos una pendiente sea no nula.
+:::
+
+**Ejercicio 4.2 ★ --- IC del 95% manual.** Para el mismo modelo, construya desde cero un intervalo de confianza del 95% para $\beta_{\mathrm{educ}}$ usando `coef()`, `summary()$coefficients[, "Std. Error"]` y `qt()`. Compruebe su intervalo contra `confint(m)["educ", ]`. ¿Contiene el intervalo al cero? ¿Qué conclusión se sigue para el test $t$ bilateral de $H_0:\beta_{\mathrm{educ}} = 0$ al nivel del 5%?
+
+::: {.callout-tip collapse="true"}
+## Mostrar respuesta
+
+```r
+m  <- lm(wage ~ educ + exper + tenure, data = wage2)
+b  <- coef(m)["educ"]
+se <- summary(m)$coefficients["educ", "Std. Error"]
+df <- nobs(m) - length(coef(m))    # n - k - 1
+tc <- qt(0.975, df)
+ci_manual <- c(b - tc * se, b + tc * se)
+confint(m)["educ", ]                # debería coincidir
+```
+
+El intervalo no contiene cero, así que el test $t$ bilateral de $H_0:\beta_{\mathrm{educ}} = 0$ al nivel del 5% rechaza --- coherente con el (diminuto) valor `Pr(>|t|)` de `summary()`.
+:::
+
+**Ejercicio 4.3 ★ --- Test $F$ manual.** En el modelo $\mathrm{wage} = \beta_0 + \beta_1\,\mathrm{educ} + \beta_2\,\mathrm{exper} + \beta_3\,\mathrm{tenure} + u$ sobre `wage2`, contraste $H_0:\beta_2 = \beta_3 = 0$ comparando las SSR de los modelos no restringido y restringido (suprimiendo `exper` y `tenure`). Calcule el valor crítico con `qf()` al nivel del 5% y el $p$-valor con `pf()`. Compruebe el resultado con `anova()`.
+
+::: {.callout-tip collapse="true"}
+## Mostrar respuesta
+
+```r
+mU <- lm(wage ~ educ + exper + tenure, data = wage2)
+mR <- lm(wage ~ educ,                  data = wage2)
+
+SSR_u <- sum(resid(mU)^2)
+SSR_r <- sum(resid(mR)^2)
+n  <- nobs(mU); k <- length(coef(mU)) - 1; q <- 2
+df_u <- n - k - 1
+
+F_stat <- ((SSR_r - SSR_u) / q) / (SSR_u / df_u)
+F_crit <- qf(0.95, q, df_u)
+p_val  <- 1 - pf(F_stat, q, df_u)
+anova(mR, mU)
+```
+
+El estadístico $F$ está muy por encima de $F_{2,\,n-k-1,\,0{,}05}$ y el $p$-valor es prácticamente cero. Rechazamos $H_0$: experiencia y antigüedad son conjuntamente significativas dada la educación.
+:::
+
+**Ejercicio 4.4 ★★ --- Test unilateral desde la teoría.** La teoría económica sugiere que un año adicional de antigüedad no puede disminuir los ingresos mensuales, así que la alternativa relevante es unilateral a la derecha: $H_0:\beta_{\mathrm{tenure}} \leq 0$ frente a $H_1:\beta_{\mathrm{tenure}} > 0$. Usando la regresión de `wage` sobre `educ + exper + tenure`, calcule el $p$-valor unilateral a partir de la salida de `summary()` y decida al nivel del 5%. ¿Cómo se compara con el $p$-valor bilateral por defecto que imprime R?
+
+*Una respuesta completa figura en la Edición del Profesor.*
+
+**Ejercicio 4.5 ★★ --- Significatividad conjunta frente a individual.** En el modelo del Ejercicio 4.1, añada `IQ` y `age` como regresores. (a) ¿Son `IQ` y `age` *individualmente* significativas al nivel del 5%? (b) ¿Son *conjuntamente* significativas al nivel del 5% (use `anova()`)? (c) Construya un ejemplo, o explique con palabras, en el que dos regresores sean individualmente no significativos pero conjuntamente sí. ¿Qué característica de los datos provoca esa diferencia?
+
+*Una respuesta completa figura en la Edición del Profesor.*
+
+**Ejercicio 4.6 ★★★ --- $F$ a partir de $R^2$.** Demuestre, partiendo de la fórmula basada en la SSR, que siempre que los modelos no restringido y restringido compartan la misma variable dependiente, el estadístico $F$ puede escribirse como
+
+$$
+F \;=\; \frac{(R^2_U - R^2_R)/q}{(1 - R^2_U)/(n-k-1)}.
+$$
+
+A continuación, compruebe la identidad numéricamente para el test $F$ de $H_0:\beta_{\mathrm{exper}} = \beta_{\mathrm{tenure}} = 0$ del Ejercicio 4.3, extrayendo los dos valores $R^2$ de `summary()` y sustituyéndolos. ¿Por qué *falla* la fórmula si la variable dependiente del modelo restringido es $\log(\mathrm{wage})$ en lugar de $\mathrm{wage}$?
+
+*Una respuesta completa figura en la Edición del Profesor.*

@@ -1,0 +1,97 @@
+---
+title: "Crosswalk Wooldridge ↔ Carter–Griffiths–Lim"
+---
+
+> *Estado: portado 2026-05-18. Revisión editorial: pendiente.*
+
+## B.1 Por qué este crosswalk
+
+La mayoría de estudiantes de la UGR llega a este curso con dos libros de cabecera al alcance: @wooldridge2020 —el manual de referencia internacional, con datos y ejemplos centrados en el mercado de trabajo estadounidense— y @cgl2017 —el *Principles of Econometrics* de Carter, Griffiths y Lim (CGL), disponible en la biblioteca de la Facultad y muy utilizado en la docencia en castellano—. Por decisión editorial (D9), este libro adopta la **notación de Wooldridge**: misma letra griega para los mismos objetos, misma convención para el subíndice del intercepto, mismas siglas para las sumas de cuadrados. Las dos tradiciones son matemáticamente equivalentes, pero usan **letras distintas para nombrar las mismas cosas** y, en algún caso, asignan las **mismas siglas a objetos distintos**. Este apéndice es la tabla de equivalencias que permite leer ambos textos sin tropezarse.
+
+## B.2 Crosswalk de notación
+
+La tabla siguiente recoge las equivalencias para los conceptos que aparecen una y otra vez a lo largo del libro.
+
+| Concepto | Wooldridge (este libro) | Carter–Griffiths–Lim 5e |
+|---|---|---|
+| Intercepto poblacional | $\beta_0$ | $\beta_1$ |
+| Pendiente poblacional sobre $x_1$ | $\beta_1$ | $\beta_2$ |
+| Pendiente $j$-ésima (regresión múltiple) | $\beta_j$, $j = 1, \ldots, k$ | $\beta_j$, $j = 2, \ldots, K$ |
+| Término de error | $u$ | $e$ |
+| Valor ajustado | $\hat{y}$ | $\hat{y}$ |
+| Residuo | $\hat{u}$ | $\hat{e}$ |
+| Suma de cuadrados total | SCT | SCT |
+| Suma de cuadrados residuales | SCR | SCE |
+| Suma de cuadrados explicada | SCE | SCR |
+| Coeficiente de determinación | $R^2$ | $R^2$ |
+| Tamaño muestral | $n$ | $N$ |
+| Número de regresores (sin intercepto) | $k$ | $K-1$ |
+| Número de parámetros (incl. intercepto) | $k + 1$ | $K$ |
+| Estimador MCO | $\hat{\beta}_j$ | $b_{j+1}$ |
+| Error estándar del estimador | $\operatorname{se}(\hat{\beta}_j)$ | $\widehat{\operatorname{sd}}(b_{j+1})$ |
+| Varianza poblacional del error | $\sigma^2 = \operatorname{Var}(u \mid x)$ | $\sigma^2 = \operatorname{Var}(e \mid x)$ |
+| Estimador de $\sigma^2$ | $\hat\sigma^2 = \text{SCR}/(n-k-1)$ | $\hat\sigma^2 = \text{SCE}/(N-K)$ |
+| Estadístico $t$ | $t = \hat{\beta}_j / \operatorname{se}(\hat{\beta}_j)$ | $t = b_{j+1} / \widehat{\operatorname{sd}}(b_{j+1})$ |
+| Estadístico $F$, $q$ restricciones | $F$ con gl $(q, n-k-1)$ | $F$ con gl $(J, N-K)$ |
+| IC del 95% para $\beta_j$ | $\hat{\beta}_j \pm t_{0{,}975,\,n-k-1}\cdot \operatorname{se}(\hat{\beta}_j)$ | $b_{j+1} \pm t_c \cdot \widehat{\operatorname{sd}}(b_{j+1})$ |
+| Errores estándar robustos a heterocedasticidad | HC0/HC1/HC2/HC3 (`sandwich`) | "white" / robustos (HC1) |
+| Modelo AR(1) | $u_t = \rho\,u_{t-1} + \varepsilon_t$ | $e_t = \rho\,e_{t-1} + v_t$ |
+| Variable ficticia (0/1) | *dummy* | *indicator* |
+| Interacción | $x_1 \cdot x_2$ o $x_1{:}x_2$ | $x_1 \cdot x_2$ |
+| Forma cuadrática | $\beta_1 x + \beta_2 x^2$ | $\beta_2 x + \beta_3 x^2$ |
+| log-nivel (semi-elasticidad) | $\ln(y) = \beta_0 + \beta_1 x + u$ | $\ln(y) = \beta_1 + \beta_2 x + e$ |
+| nivel-log | $y = \beta_0 + \beta_1 \ln(x) + u$ | $y = \beta_1 + \beta_2 \ln(x) + e$ |
+| log-log (elasticidad) | $\ln(y) = \beta_0 + \beta_1 \ln(x) + u$ | $\ln(y) = \beta_1 + \beta_2 \ln(x) + e$ |
+
+:::{.callout-warning}
+## Atención: SCR y SCE están intercambiadas
+
+Los nombres «SCR» y «SCE» están **intercambiados** entre las dos tradiciones. En Wooldridge, **SCR** es la *suma de cuadrados de los residuos* ($\sum_i \hat{u}_i^2$) y **SCE** es la *suma de cuadrados explicada*; en CGL, **SCE** es la *suma de cuadrados de los errores* (los residuos) y **SCR** es la *suma de cuadrados de la regresión* (la explicada). La identidad $\text{SCT} = \text{SCE} + \text{SCR}$ vale en ambos libros, pero **cada componente se llama distinto**. Al leer la salida de R: `summary(lm())`, `anova()` y `deviance()` siguen la convención de Wooldridge.
+:::
+
+Una segunda fuente de confusión es el **subíndice del intercepto**. Wooldridge numera los coeficientes empezando por el intercepto ($\beta_0$) y sigue con las pendientes ($\beta_1, \beta_2, \ldots, \beta_k$); CGL empieza por el intercepto en $\beta_1$ y las pendientes son $\beta_2, \beta_3, \ldots, \beta_K$. La consecuencia práctica es que **el coeficiente sobre la primera regresora se llama $\beta_1$ en Wooldridge pero $\beta_2$ en CGL**. Hay que estar atento al leer ecuaciones cruzadas entre ambos textos.
+
+## B.3 Mapeo de capítulos
+
+La tabla siguiente empareja los capítulos de este libro con los del Wooldridge y los del CGL. La columna de páginas de CGL es orientativa (5.ª edición, 2017) y debe contrastarse con el ejemplar concreto que tenga el lector.
+
+| Capítulo en este libro | Wooldridge 7e | CGL 5e | Páginas en CGL 5e (aprox.) |
+|---|---|---|---|
+| Cap. 1 — Conceptos iniciales | Cap. 1 | Cap. 1 | 1–40 |
+| Cap. 2 — Regresión lineal simple (RLS) | Cap. 2 | Cap. 2 | 41–98 |
+| Cap. 3 — Regresión lineal múltiple (RLM) | Cap. 3 | Cap. 5 | 191–242 |
+| Cap. 4 — Inferencia | Cap. 4 | Cap. 3 y 6 | 99–134, 243–290 |
+| Cap. 5 — Predicción | Partes del Cap. 6 | Cap. 4 | 135–190 |
+| Cap. 6 — Formas funcionales y ficticias | Caps. 6 y 7 | Caps. 7 y 8 | 291–392 |
+| Cap. 7 — Heterocedasticidad | Cap. 8 | Cap. 8 | 355–392 |
+| Cap. 8 — Autocorrelación | Cap. 12 | Cap. 9 | 393–446 |
+| Apéndice A — Prerrequisitos | Apéndices A–C | Apéndices A–B y P | — |
+
+## B.4 Dónde divergen pedagógicamente
+
+Aunque los dos libros cubren el mismo núcleo de econometría introductoria, presentan el material con énfasis distintos. Conviene tenerlo en mente al alternar lecturas.
+
+**Forma matricial.** Wooldridge introduce la forma matricial de MCO temprano (Apéndice E, referenciado ya desde §3.4) y la usa como herramienta unificadora en los capítulos avanzados. CGL pospone el tratamiento matricial hasta un apéndice final y trabaja casi todo el libro en notación escalar. Si el lector viene de CGL y se encuentra por primera vez con $\hat{\boldsymbol{\beta}} = (X'X)^{-1} X'\mathbf{y}$, conviene repasar el §A.5 de este libro antes de seguir.
+
+**Conjuntos de datos y ejemplos.** Wooldridge ancla la mayoría de sus ejemplos en el mercado laboral estadounidense: salarios (`wage1`, `wage2`), educación, vivienda (`hprice1`), y delincuencia. CGL prefiere el **gasto en alimentos** como ejemplo recurrente del Capítulo 2 en adelante —un conjunto de datos pequeño y muy didáctico— y completa con datos de demanda, producción y mercados financieros. Las prácticas de este libro siguen a Wooldridge para que la base `wooldridge` de R sea la única dependencia.
+
+**Vocabulario.** Wooldridge usa *dummy variable* (en castellano, **variable ficticia**) de forma sistemática. CGL prefiere *indicator variable* (**variable indicadora**), reservando *dummy* para usos coloquiales. Ambos términos son intercambiables; este libro adopta «ficticia», con «indicadora» como sinónimo entre paréntesis la primera vez que aparece (§6.3).
+
+**Heterocedasticidad.** Los dos libros enseñan el contraste de Goldfeld–Quandt (GQ) y el de Breusch–Pagan (BP). CGL añade un tratamiento explícito y temprano del **contraste general de White** —incluyendo su versión con productos cruzados— como caso particular del BP con todos los cuadrados e interacciones. Wooldridge introduce White más tarde y de forma menos central. El §7.4 de este libro presenta los tres contrastes (BP, White y GQ) en el mismo lugar, siguiendo a Wooldridge en la notación.
+
+**Autocorrelación.** Wooldridge dedica el Capítulo 12 a las series temporales con errores correlacionados, integrando Durbin–Watson, Breusch–Godfrey, y la corrección de Cochrane–Orcutt. CGL lo trata en su Capítulo 9, con un orden ligeramente distinto y un énfasis mayor en la estimación por **MCG factibles** (FGLS) desde el principio. Las prácticas de este libro siguen a Wooldridge: DW y BG como diagnóstico, Cochrane–Orcutt (`orcutt`) como corrección.
+
+## B.5 Si solo tienes CGL: ruta de lectura
+
+Para el lector que solo dispone del CGL, la ruta de lectura que cubre el mismo material que este libro es la siguiente:
+
+- **Cap. 1 (Conceptos iniciales)** → CGL Cap. 1, §1.1–1.6.
+- **Cap. 2 (RLS)** → CGL Cap. 2, §2.1–2.10.
+- **Cap. 3 (RLM)** → CGL Cap. 5, §5.1–5.6, más §5.7 para multicolinealidad.
+- **Cap. 4 (Inferencia)** → CGL Cap. 3 para el caso de un coeficiente; CGL Cap. 6, §6.1–6.3 para contrastes $F$ conjuntos y restricciones lineales.
+- **Cap. 5 (Predicción)** → CGL Cap. 4, §4.1–4.4 (intervalos de predicción) y §6.4.
+- **Cap. 6 (Formas funcionales y ficticias)** → CGL Cap. 7 completo (ficticias e interacciones) y CGL Cap. 8, §8.1 para log-niveles y cuadráticos.
+- **Cap. 7 (Heterocedasticidad)** → CGL Cap. 8, §8.2–8.6 (BP, White, MCG factibles, errores robustos).
+- **Cap. 8 (Autocorrelación)** → CGL Cap. 9, §9.1–9.5 (DW, AR(1), Cochrane–Orcutt, errores estándar HAC).
+
+Con esta correspondencia, **cualquier lectura de este libro puede cruzarse con un capítulo y unas secciones concretas del CGL**. La recomendación práctica: leer primero el capítulo de este libro —que sigue el orden y la notación de Wooldridge— y consultar las secciones equivalentes de CGL cuando se quiera una segunda exposición, un ejemplo numérico distinto o un tratamiento alternativo de un contraste. La inversa también funciona: alumnos que vengan de un curso con CGL pueden usar este libro como **traducción a la notación de Wooldridge** sin perder material.

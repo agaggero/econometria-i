@@ -1,0 +1,478 @@
+---
+title: "Prerrequisitos matemáticos y estadísticos"
+---
+
+> *Estado: portado 2026-05-18. El Tema 0 español es la fuente canónica (G8); este apéndice alimenta al inglés.*
+
+Este apéndice recoge, en formato de referencia rápida, las herramientas matemáticas y estadísticas que el libro asume conocidas. No pretende sustituir un curso de cálculo, probabilidad o álgebra lineal; el objetivo es **fijar la notación** —la de @wooldridge2020— y **recordar las propiedades** que se usan a lo largo del texto: el logaritmo en las elasticidades del Capítulo 6, las condiciones de primer orden en la derivación de MCO del Capítulo 2, las propiedades de la varianza y la covarianza en la fórmula del estimador, la distribución muestral del Capítulo 4 y la forma matricial del Capítulo 3.
+
+Se incluye también un bloque práctico sobre **R y RStudio**: cómo instalar el software, cargar los paquetes que usaremos y dar los primeros pasos con un conjunto de datos reales.
+
+## Objetivos {.unnumbered}
+
+- **Manejar** las propiedades del logaritmo natural y de los exponentes que aparecen en las formas funcionales del libro.
+- **Calcular** derivadas y derivadas parciales sencillas, y plantear la **condición de primer orden (CPO)** de un problema de optimización.
+- **Aplicar** las reglas de la esperanza, la varianza y la covarianza para variables aleatorias.
+- **Identificar** las distribuciones muestrales que se usan en inferencia ($t$, $F$, $\chi^2$) y reconocer dónde aparece el **teorema central del límite (TCL)**.
+- **Operar** con vectores y matrices al nivel necesario para entender la forma matricial de MCO.
+- **Instalar** R y RStudio, cargar el paquete `wooldridge` y producir los primeros descriptivos y gráficos.
+
+## A.1 Repaso de álgebra
+
+### A.1.1 Funciones y exponentes
+
+Una **función** $f$ asigna a cada valor $x$ del dominio un único valor $y = f(x)$. En el libro trabajaremos sobre todo con tres familias:
+
+- **Lineal**: $f(x) = a + bx$. La pendiente $b$ es constante.
+- **Cuadrática**: $f(x) = a + bx + cx^2$. La pendiente $b + 2cx$ depende de $x$ (rendimientos decrecientes o crecientes).
+- **Exponencial / logarítmica**: $f(x) = e^x$ y su inversa $f(x) = \ln(x)$.
+
+Recordamos las reglas básicas de los **exponentes**:
+
+$$
+a^m \cdot a^n = a^{m+n}, \qquad
+\frac{a^m}{a^n} = a^{m-n}, \qquad
+(a^m)^n = a^{mn}, \qquad
+a^0 = 1, \qquad
+a^{-n} = \frac{1}{a^n}.
+$$
+
+### A.1.2 Logaritmos
+
+El **logaritmo natural** $\ln(x) = \log_e(x)$ es la inversa de la función exponencial $e^x$:
+
+$$
+\ln(e^x) = x, \qquad e^{\ln(x)} = x \quad (x > 0).
+$$
+
+Las cuatro propiedades que usaremos sistemáticamente —sobre todo en el Capítulo 6, al interpretar modelos log-lineales como **elasticidades**— son:
+
+$$
+\ln(xy) = \ln(x) + \ln(y), \qquad
+\ln\!\left(\frac{x}{y}\right) = \ln(x) - \ln(y),
+$$
+
+$$
+\ln(x^a) = a\,\ln(x), \qquad
+\ln(1) = 0.
+$$
+
+:::{.callout-note}
+## Aproximación log $\approx$ tasa de crecimiento
+
+Para variaciones pequeñas, $\ln(x_1) - \ln(x_0) \approx (x_1 - x_0)/x_0$. Es decir: la **diferencia de logaritmos** aproxima la **tasa de crecimiento**. Por eso, en un modelo del tipo $\ln(\text{salario}) = \beta_0 + \beta_1\,\text{educ} + u$, el coeficiente $\beta_1$ se interpreta como el cambio **proporcional** en el salario asociado a un año adicional de educación (un retorno aproximado a la educación). Volveremos sobre esto con detalle en el Capítulo 6.
+:::
+
+:::{.callout-warning}
+## Error frecuente
+
+$\ln(x + y) \neq \ln(x) + \ln(y)$. La regla del logaritmo del producto vale para $\ln(xy)$, no para $\ln(x+y)$. Confundirlas es uno de los errores algebraicos más habituales al manipular modelos log-lineales.
+:::
+
+### A.1.3 Sumatorios
+
+El símbolo de sumatorio $\sum$ es una notación abreviada de la que no podemos prescindir:
+
+$$
+\sum_{i=1}^{n} x_i = x_1 + x_2 + \cdots + x_n.
+$$
+
+Dos propiedades que se usan constantemente:
+
+$$
+\sum_{i=1}^{n} (a x_i + b y_i) = a \sum_{i=1}^{n} x_i + b \sum_{i=1}^{n} y_i,\qquad
+\sum_{i=1}^{n} c = n\,c.
+$$
+
+La media muestral es $\bar x = \tfrac{1}{n}\sum_{i=1}^{n} x_i$, y una propiedad que utilizaremos en la derivación de MCO es $\sum_{i=1}^{n} (x_i - \bar x) = 0$.
+
+## A.2 Repaso de cálculo
+
+### A.2.1 Derivada de una función
+
+La **derivada** $f'(x) = \dfrac{df}{dx}$ mide la pendiente de $f$ en el punto $x$. Las reglas que necesitaremos son:
+
+| Función | Derivada |
+|---|---|
+| $f(x) = c$ (constante) | $f'(x) = 0$ |
+| $f(x) = x^n$ | $f'(x) = n\,x^{n-1}$ |
+| $f(x) = e^x$ | $f'(x) = e^x$ |
+| $f(x) = \ln(x)$ | $f'(x) = 1/x$ |
+| $f(x) = a\,g(x) + b\,h(x)$ | $f'(x) = a\,g'(x) + b\,h'(x)$ |
+| $f(x) = g(x)\,h(x)$ | $f'(x) = g'(x)\,h(x) + g(x)\,h'(x)$ |
+| $f(x) = g(h(x))$ (regla de la cadena) | $f'(x) = g'(h(x))\,h'(x)$ |
+
+### A.2.2 Derivadas parciales
+
+Cuando $f$ depende de varias variables, $f(x_1, x_2, \ldots, x_k)$, la **derivada parcial** respecto de $x_j$ se obtiene tratando las demás variables como constantes:
+
+$$
+\frac{\partial f}{\partial x_j}.
+$$
+
+En el Capítulo 3 (regresión múltiple), el coeficiente $\beta_j$ del modelo $y = \beta_0 + \beta_1 x_1 + \cdots + \beta_k x_k + u$ se interpreta como:
+
+$$
+\beta_j = \frac{\partial \mathbb{E}(y \mid x_1, \ldots, x_k)}{\partial x_j},
+$$
+
+es decir, el cambio esperado en $y$ ante un aumento unitario de $x_j$ **manteniendo constantes** las demás regresoras (interpretación *ceteris paribus*).
+
+### A.2.3 Optimización por condición de primer orden
+
+Si $f$ es suave y alcanza un máximo o mínimo interior en $x^\ast$, entonces
+
+$$
+f'(x^\ast) = 0.
+$$
+
+Esta es la **condición de primer orden (CPO)**. Para verificar que se trata de un mínimo, la **condición de segundo orden** exige $f''(x^\ast) > 0$.
+
+En el caso multivariante, la CPO de $f(x_1, \ldots, x_k)$ es
+
+$$
+\frac{\partial f}{\partial x_j} = 0 \quad \text{para } j = 1, 2, \ldots, k.
+$$
+
+Este es el aparato que utilizaremos en §2.4 para derivar el estimador de **Mínimos Cuadrados Ordinarios (MCO)**: la suma de cuadrados de los residuos $\text{SCR}(\beta_0, \beta_1) = \sum_i (y_i - \beta_0 - \beta_1 x_i)^2$ se minimiza imponiendo $\partial \text{SCR}/\partial \beta_0 = 0$ y $\partial \text{SCR}/\partial \beta_1 = 0$.
+
+:::{.callout-note}
+## Ejemplo: CPO de una parábola
+
+Sea $f(x) = (x - 3)^2 + 5$. Su derivada es $f'(x) = 2(x - 3)$. Imponiendo $f'(x) = 0$ se obtiene $x^\ast = 3$. Como $f''(x) = 2 > 0$, es un mínimo. El valor mínimo de la función es $f(3) = 5$. La misma lógica, aplicada a una suma de cuadrados con dos parámetros, conduce a las fórmulas de MCO.
+:::
+
+## A.3 Repaso de probabilidad
+
+### A.3.1 Variable aleatoria
+
+Una **variable aleatoria** $X$ es una función que asigna un número real a cada resultado de un experimento aleatorio. Distinguimos dos tipos:
+
+- **Discretas**: toman un conjunto finito o numerable de valores (número de hijos, sector de actividad codificado, dummy 0/1).
+- **Continuas**: toman valores en un intervalo de $\mathbb{R}$ (salario, altura, tipo de interés).
+
+### A.3.2 Esperanza
+
+La **esperanza** de $X$ —su valor medio poblacional— se denota:
+
+$$
+\mathbb{E}(X) = \mu.
+$$
+
+Las propiedades fundamentales son:
+
+$$
+\mathbb{E}(c) = c, \qquad
+\mathbb{E}(aX + b) = a\,\mathbb{E}(X) + b,
+$$
+
+$$
+\mathbb{E}(aX_1 + bX_2) = a\,\mathbb{E}(X_1) + b\,\mathbb{E}(X_2),
+$$
+
+$$
+\mathbb{E}\!\left(\sum_{i=1}^{N} a_i X_i\right) = \sum_{i=1}^{N} a_i\,\mathbb{E}(X_i).
+$$
+
+Esta última propiedad —la **linealidad de la esperanza**— vale **siempre**, con independencia de que las $X_i$ estén correlacionadas o no.
+
+### A.3.3 Varianza
+
+La **varianza** mide la dispersión de $X$ en torno a su media:
+
+$$
+\operatorname{Var}(X) = \sigma^2 = \mathbb{E}\!\left[(X - \mathbb{E}(X))^2\right] = \mathbb{E}\!\left[(X - \mu)^2\right].
+$$
+
+Equivalentemente, usando la fórmula computacional:
+
+$$
+\operatorname{Var}(X) = \mathbb{E}(X^2) - \mathbb{E}(X)^2.
+$$
+
+Propiedades:
+
+$$
+\operatorname{Var}(c) = 0, \qquad
+\operatorname{Var}(aX) = a^2\,\operatorname{Var}(X), \qquad
+\operatorname{Var}(aX + b) = a^2\,\operatorname{Var}(X).
+$$
+
+La **desviación típica** $\sigma = \sqrt{\operatorname{Var}(X)}$ se expresa en las mismas unidades que $X$.
+
+### A.3.4 Covarianza y correlación
+
+La **covarianza** mide la asociación lineal entre dos variables:
+
+$$
+\operatorname{Cov}(X, Y) = \mathbb{E}\!\left[(X - \mathbb{E}(X))(Y - \mathbb{E}(Y))\right] = \mathbb{E}(XY) - \mathbb{E}(X)\,\mathbb{E}(Y).
+$$
+
+Si $\mathbb{E}(X) = 0$ o $\mathbb{E}(Y) = 0$, la fórmula se simplifica a $\operatorname{Cov}(X, Y) = \mathbb{E}(XY)$.
+
+Propiedades:
+
+$$
+\operatorname{Cov}(aX, bY) = ab\,\operatorname{Cov}(X, Y), \qquad
+\operatorname{Cov}(X, X) = \operatorname{Var}(X).
+$$
+
+Si $X$ e $Y$ son **independientes**, entonces $\operatorname{Cov}(X, Y) = 0$. El recíproco no es cierto en general: covarianza nula solo descarta asociación **lineal**.
+
+La **correlación** es la covarianza normalizada y vive en $[-1, 1]$:
+
+$$
+\operatorname{Corr}(X, Y) = \frac{\operatorname{Cov}(X, Y)}{\sqrt{\operatorname{Var}(X)\,\operatorname{Var}(Y)}} = \frac{\operatorname{Cov}(X, Y)}{\sigma_X\,\sigma_Y}.
+$$
+
+### A.3.5 Varianza de una suma
+
+Combinando varianza y covarianza:
+
+$$
+\operatorname{Var}(aX + bY) = a^2\,\operatorname{Var}(X) + b^2\,\operatorname{Var}(Y) + 2ab\,\operatorname{Cov}(X, Y).
+$$
+
+Si $\operatorname{Cov}(X, Y) = 0$ —en particular, si $X$ e $Y$ son independientes—:
+
+$$
+\operatorname{Var}(X + Y) = \operatorname{Var}(X) + \operatorname{Var}(Y).
+$$
+
+:::{.callout-warning}
+## Error frecuente
+
+La fórmula $\operatorname{Var}(X + Y) = \operatorname{Var}(X) + \operatorname{Var}(Y)$ **solo** vale cuando la covarianza entre $X$ e $Y$ es cero. Cuando hay correlación, hay que añadir el término cruzado $2\,\operatorname{Cov}(X, Y)$. Olvidarlo es uno de los errores más habituales al calcular varianzas de estimadores.
+:::
+
+### A.3.6 Esperanza condicional
+
+La **esperanza condicional** $\mathbb{E}(Y \mid X)$ es la media de $Y$ dado un valor de $X$. Es una función de $X$ y juega un papel central en econometría: el modelo de regresión es, en esencia, una forma funcional para $\mathbb{E}(Y \mid X)$.
+
+Propiedades:
+
+$$
+\mathbb{E}(X \mid X) = X, \qquad
+\mathbb{E}\!\left[a\,g(X)\,Y + b\,h(X) \mid X\right] = a\,g(X)\,\mathbb{E}(Y \mid X) + b\,h(X).
+$$
+
+Si $X$ e $Y$ son independientes, $\mathbb{E}(Y \mid X) = \mathbb{E}(Y)$.
+
+La **ley de las esperanzas iteradas** (o esperanza anidada) afirma que:
+
+$$
+\mathbb{E}\!\left[\mathbb{E}(Y \mid X)\right] = \mathbb{E}(Y).
+$$
+
+Es decir, la media de las medias condicionales es la media incondicional. Es la herramienta clave para mostrar, en el Capítulo 3, que bajo el supuesto de exogeneidad estricta $\mathbb{E}(u \mid x_1, \ldots, x_k) = 0$, el estimador MCO es insesgado.
+
+## A.4 Repaso de inferencia estadística
+
+### A.4.1 Estimadores y distribución muestral
+
+Dada una muestra aleatoria $\{Y_1, Y_2, \ldots, Y_n\}$ de una población, un **estimador** $\hat{\theta}$ es una función de los datos que aproxima un parámetro poblacional $\theta$. La **distribución muestral** de $\hat{\theta}$ —la distribución que se obtendría repitiendo el muestreo infinitas veces— describe su comportamiento. El estimador es **insesgado** si $\mathbb{E}(\hat{\theta}) = \theta$, y **consistente** si converge a $\theta$ cuando $n \to \infty$.
+
+### A.4.2 Teorema central del límite
+
+Si $\{Y_1, \ldots, Y_n\}$ es una muestra i.i.d. con media $\mu$ y varianza $\sigma^2 < \infty$, la media muestral $\bar{Y} = \tfrac{1}{n}\sum_i Y_i$ cumple, para $n$ grande:
+
+$$
+\frac{\bar{Y} - \mu}{\sigma / \sqrt{n}} \ \overset{a}{\sim}\ N(0, 1).
+$$
+
+Este es el **teorema central del límite (TCL)**. Es la razón por la que la **distribución normal** aparece de forma sistemática en inferencia: aunque la población no sea normal, las medias y los estimadores MCO basados en sumas se aproximan a una normal cuando la muestra es suficientemente grande.
+
+### A.4.3 Distribuciones $t$, $F$ y $\chi^2$
+
+Tres distribuciones aparecen una y otra vez en los Capítulos 4 y 5:
+
+- **Chi-cuadrado** $\chi^2_q$: si $Z_1, \ldots, Z_q \sim N(0,1)$ son independientes, entonces $\sum_{i=1}^q Z_i^2 \sim \chi^2_q$. Sus grados de libertad son $q$ y su media es $q$.
+- **$t$ de Student** $t_q$: si $Z \sim N(0,1)$ y $W \sim \chi^2_q$ son independientes, entonces $Z / \sqrt{W/q} \sim t_q$. Es simétrica en torno a 0 y, para $q$ grande, se aproxima a la $N(0,1)$.
+- **$F$ de Snedecor** $F_{q_1, q_2}$: si $W_1 \sim \chi^2_{q_1}$ y $W_2 \sim \chi^2_{q_2}$ son independientes, entonces $(W_1/q_1)/(W_2/q_2) \sim F_{q_1, q_2}$. Solo toma valores positivos.
+
+En los contrastes del libro, los **valores críticos** —los percentiles 0,95 o 0,99 de estas distribuciones— se leen de una tabla o se calculan en R con `qt()`, `qf()` y `qchisq()`. La regla práctica: la $t$ aparece en contrastes sobre **un solo** coeficiente (§4.3); la $F$, en contrastes de **restricciones múltiples** (§4.4).
+
+:::{.callout-note}
+## Definición: $p$-valor
+
+El $p$-valor de un contraste es la probabilidad, bajo la hipótesis nula, de observar un estadístico de contraste al menos tan extremo como el obtenido. Un $p$-valor pequeño constituye evidencia en contra de la nula. Los umbrales convencionales son 1%, 5% y 10%, pero lo que conviene reportar es el propio $p$-valor —no solo "rechazada" o "no rechazada".
+:::
+
+### A.4.4 Intervalos de confianza
+
+Un **intervalo de confianza** al $(1 - \alpha)$ para un parámetro $\theta$ es un intervalo aleatorio que, en muestras repetidas, contiene al verdadero $\theta$ con probabilidad $1 - \alpha$. Para un estimador $\hat\theta$ con distribución muestral aproximadamente normal y error estándar $\mathrm{ee}(\hat\theta)$, el intervalo estándar al 95% es $\hat\theta \pm 1{,}96 \cdot \mathrm{ee}(\hat\theta)$. El Capítulo 4 construye intervalos de confianza para los coeficientes individuales de MCO exactamente con esta forma.
+
+## A.5 Repaso de álgebra lineal
+
+El libro recurre a la **forma matricial** de MCO de forma sistemática a partir de §3.4. Aquí fijamos lo imprescindible.
+
+### A.5.1 Vectores y matrices
+
+Un **vector columna** de dimensión $n$ se escribe
+
+$$
+\mathbf{y} = \begin{pmatrix} y_1 \\ y_2 \\ \vdots \\ y_n \end{pmatrix}.
+$$
+
+Una **matriz** $A$ de dimensión $n \times k$ tiene $n$ filas y $k$ columnas; sus elementos se denotan $a_{ij}$, con $i$ índice de fila y $j$ índice de columna.
+
+### A.5.2 Operaciones básicas
+
+- **Suma**: dos matrices del mismo tamaño se suman elemento a elemento.
+- **Producto por escalar**: $(\alpha A)_{ij} = \alpha\,a_{ij}$.
+- **Producto matricial**: si $A$ es $n \times k$ y $B$ es $k \times m$, entonces $AB$ es $n \times m$ con $(AB)_{ij} = \sum_{\ell=1}^{k} a_{i\ell}\,b_{\ell j}$. El producto **no** es conmutativo: en general $AB \neq BA$.
+
+### A.5.3 Traspuesta
+
+La **traspuesta** $A'$ (también escrita $A'$) intercambia filas y columnas: si $A$ es $n \times k$, $A'$ es $k \times n$ y $(A')_{ij} = a_{ji}$. Propiedades:
+
+$$
+(A')' = A, \qquad (A + B)' = A' + B', \qquad (AB)' = B'\,A'.
+$$
+
+Una matriz es **simétrica** si $A = A'$.
+
+### A.5.4 Inversa y rango
+
+Una matriz cuadrada $A$ de dimensión $k \times k$ es **invertible** (o no singular) si existe $A^{-1}$ tal que $A\,A^{-1} = A^{-1}\,A = I_k$, donde $I_k$ es la matriz identidad de tamaño $k$. Propiedades:
+
+$$
+(A^{-1})^{-1} = A, \qquad (AB)^{-1} = B^{-1}\,A^{-1}, \qquad (A^{-1})' = (A')^{-1}.
+$$
+
+El **rango** de una matriz $A$ es el número de columnas (o filas) **linealmente independientes**. Una matriz cuadrada $k \times k$ es invertible si y solo si tiene rango $k$ (rango pleno).
+
+En el Capítulo 3, el estimador MCO en forma matricial es
+
+$$
+\hat{\boldsymbol{\beta}} = (X'X)^{-1}\,X'\,\mathbf{y},
+$$
+
+donde $X$ es la matriz $n \times k$ de regresoras (con una columna de unos para el intercepto). El supuesto de **rango pleno** —que las columnas de $X$ sean linealmente independientes— es lo que garantiza que $X'X$ sea invertible. Su violación es justamente la **multicolinealidad perfecta** del Capítulo 3.
+
+## A.6 Configurar R y RStudio
+
+Todo el libro emplea **R** —y, como interfaz gráfica, **RStudio**— para la práctica. Ambos son gratuitos y multiplataforma.
+
+1. Descargar e instalar **R** desde <https://cran.r-project.org/>.
+2. Descargar e instalar **RStudio Desktop** desde <https://posit.co/download/rstudio-desktop/>.
+3. Abrir RStudio. En la consola, instalar de una sola vez los paquetes que usaremos a lo largo del curso:
+
+```{r}
+#| eval: false
+install.packages(c("wooldridge", "readxl", "lmtest", "sandwich", "orcutt"))
+```
+
+La instalación se realiza **una sola vez** por equipo. En cada sesión nueva, los paquetes se cargan con `library()`.
+
+```{r}
+#| message: false
+#| warning: false
+library(wooldridge)
+data("wage1")
+```
+
+Estos paquetes cubren, respectivamente: los conjuntos de datos del libro de Wooldridge (`wooldridge`), la lectura de archivos Excel (`readxl`), contrastes de hipótesis sobre coeficientes (`lmtest`), errores estándar robustos a heterocedasticidad (`sandwich`) y la corrección de Cochrane–Orcutt para autocorrelación (`orcutt`).
+
+:::{.callout-note}
+## Lectura desde Excel
+
+Para leer un archivo `.xlsx` propio (por ejemplo, los datos de la Práctica 0):
+
+```{r}
+#| eval: false
+library(readxl)
+datos_notas <- read_excel("ruta/al/archivo/datos_notas.xlsx")
+```
+
+Hay que usar **barras inclinadas** `/` en la ruta —incluso en Windows— o duplicar las barras invertidas (`\\`).
+:::
+
+### Primer vistazo a un conjunto de datos
+
+Tres funciones bastan para una primera exploración:
+
+```{r}
+str(wage1)
+```
+
+`str()` describe la **estructura**: tipo de cada variable, número de observaciones y de columnas. Útil para confirmar que las variables numéricas no se han leído como texto.
+
+```{r}
+summary(wage1[, c("wage", "educ", "exper", "tenure")])
+```
+
+`summary()` devuelve los **estadísticos descriptivos** —mínimo, máximo, media, mediana y cuartiles— de cada variable.
+
+```{r}
+head(wage1[, c("wage", "educ", "exper", "female", "married")])
+```
+
+`head()` muestra las **primeras filas** para inspeccionar visualmente los datos.
+
+:::{.callout-note}
+## Glosario rápido de R
+
+- `<-` es el operador de **asignación**: `x <- 5` guarda el valor 5 en el objeto `x`.
+- `c()` **combina** valores en un vector: `c(1, 2, 3)`.
+- `data.frame` es la estructura tabular estándar: una columna por variable, una fila por observación.
+- `$` extrae una columna por su nombre: `wage1$wage`.
+- `?nombre_funcion` abre la ayuda de `nombre_funcion`.
+:::
+
+## A.7 Primeros gráficos
+
+Más allá de los estadísticos resumen, conviene **mirar** los datos. R ofrece comandos sencillos para histogramas, diagramas de dispersión y medias condicionales por grupos.
+
+### A.7.1 Histograma de una variable
+
+```{r}
+#| fig-cap: "Distribución del salario por hora (USD)."
+hist(wage1$wage,
+     breaks = 30, col = "lightblue",
+     main = "Distribución del salario por hora",
+     xlab = "Salario (USD/h)")
+```
+
+La distribución es claramente **asimétrica a la derecha**: hay una cola larga de salarios altos. La media (aprox. 5,90 USD/h) supera a la mediana (4,65 USD/h). Es el patrón habitual en variables de renta.
+
+```{r}
+#| fig-cap: "Distribución de los años de educación."
+hist(wage1$educ,
+     breaks = 18, col = "lightgreen",
+     main = "Años de educación",
+     xlab = "Años de educación")
+```
+
+### A.7.2 Diagrama de dispersión
+
+```{r}
+#| fig-cap: "Salario por hora frente a años de educación."
+plot(wage1$educ, wage1$wage,
+     pch = 16, col = rgb(0, 0, 1, 0.3),
+     xlab = "Años de educación",
+     ylab = "Salario por hora (USD)",
+     main = "Salario vs. educación")
+```
+
+La nube sugiere una **asociación positiva** entre educación y salario. Pero —como se discutió en el Capítulo 1— la correlación bruta no es el efecto causal de la educación: para acercarnos a éste necesitaremos los controles del Capítulo 3.
+
+### A.7.3 Medias condicionales
+
+```{r}
+# Salario medio por género (female = 1 si mujer)
+tapply(wage1$wage, wage1$female, mean)
+```
+
+```{r}
+# Salario medio por estado civil
+tapply(wage1$wage, wage1$married, mean)
+```
+
+`tapply()` calcula una **media condicional**: la media de $Y$ por grupos definidos por una variable categórica. Estas medias son útiles para detectar asociaciones brutas, pero no son efectos causales: una brecha salarial bruta entre hombres y mujeres puede reflejar diferencias en ocupación, experiencia, sector y horas trabajadas, además de —o en lugar de— discriminación.
+
+:::{.callout-tip collapse="true"}
+## Pista: a partir de aquí
+
+Con R instalado, los paquetes cargados y los descriptivos a la vista, ya se está en condiciones de abordar el primer modelo de regresión del Capítulo 2. La función `lm()` —el estimador MCO en R— se introduce allí; las propiedades teóricas de los estimadores, en los Capítulos 3 y 4; y los contrastes basados en valores críticos $t$, en §4.3.
+:::
