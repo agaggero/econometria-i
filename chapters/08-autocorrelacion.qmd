@@ -29,7 +29,7 @@ $$
 y_t = \beta_0 + \beta_1 x_{1t} + \beta_2 x_{2t} + \cdots + \beta_k x_{kt} + u_t.
 $$
 
-En forma matricial, $\mathbf{Y} = \mathbf{X}\boldsymbol{\beta} + \mathbf{u}$, exactamente como antes —solo cambia el índice—. Un ejemplo típico es una serie mensual de datos de una empresa:
+En forma matricial, $\mathbf{Y} = \mathbf{X}\beta + \mathbf{u}$, exactamente como antes —solo cambia el índice—. Un ejemplo típico es una serie mensual de datos de una empresa:
 
 | Mes        | Ventas $y_t$ | Publicidad $x_t$ |
 |------------|--------------|------------------|
@@ -40,7 +40,7 @@ En forma matricial, $\mathbf{Y} = \mathbf{X}\boldsymbol{\beta} + \mathbf{u}$, ex
 | Nov 2020   | 175          | 24               |
 | Dic 2020   | 190          | 30               |
 
-Desde el punto de vista mecánico, casi todo lo aprendido en los capítulos 2-6 se traslada sin cambios: MCO sigue resolviendo $\min_{\boldsymbol\beta} \sum_t (y_t - \mathbf{x}_t'\boldsymbol\beta)^2$; la interpretación por partialling-out es la misma; los regresores no lineales y cualitativos se comportan igual. Lo que cambia es la **estructura del error**. Dos errores $u_t$ y $u_s$ se refieren a la *misma* unidad económica observada en *momentos distintos*, y en general no hay razón para que sean incorrelados.
+Desde el punto de vista mecánico, casi todo lo aprendido en los capítulos 2-6 se traslada sin cambios: MCO sigue resolviendo $\min_{\beta} \sum_t (y_t - \mathbf{x}_t'\beta)^2$; la interpretación por partialling-out es la misma; los regresores no lineales y cualitativos se comportan igual. Lo que cambia es la **estructura del error**. Dos errores $u_t$ y $u_s$ se refieren a la *misma* unidad económica observada en *momentos distintos*, y en general no hay razón para que sean incorrelados.
 
 ::: {.callout-note}
 ## Recordatorio del supuesto RLM.2 (muestra aleatoria) en contexto temporal
@@ -111,11 +111,11 @@ Los procesos de orden superior (AR(2), AR($p$), ARMA, …) existen y se estudian
 
 ### 8.2.3 Consecuencias para MCO
 
-¿Qué efecto tiene la autocorrelación sobre el estimador MCO $\hat{\boldsymbol\beta}$?
+¿Qué efecto tiene la autocorrelación sobre el estimador MCO $\hat{\beta}$?
 
-1. **MCO sigue siendo insesgado y consistente** —siempre que la esperanza condicional esté correctamente especificada, esto es, $\mathbb{E}[u_t \mid \mathbf{x}_t] = 0$—. La autocorrelación afecta a los elementos *fuera de la diagonal* de $\operatorname{Var}(\mathbf{u})$ y no desplaza la media del estimador respecto a $\boldsymbol\beta$. Las estimaciones puntuales no son el problema.
+1. **MCO sigue siendo insesgado y consistente** —siempre que la esperanza condicional esté correctamente especificada, esto es, $\mathbb{E}[u_t \mid \mathbf{x}_t] = 0$—. La autocorrelación afecta a los elementos *fuera de la diagonal* de $\operatorname{Var}(\mathbf{u})$ y no desplaza la media del estimador respecto a $\beta$. Las estimaciones puntuales no son el problema.
 2. **MCO ya no es ELIO (BLUE).** Pierde la propiedad de óptimalidad: ya no es el estimador lineal e insesgado de mínima varianza. Existe un estimador alternativo, el de **Mínimos Cuadrados Generalizados (MCG)**, que sí lo es (§8.4).
-3. **Los errores estándar habituales de MCO son incorrectos.** La fórmula de manual $\operatorname{Var}(\hat{\boldsymbol\beta}) = \sigma^2 (\mathbf{X}'\mathbf{X})^{-1}$ presupone $\operatorname{Var}(\mathbf{u}) = \sigma^2 \mathbf{I}_n$, supuesto que falla. Bajo autocorrelación **positiva**, los errores estándar reportados por MCO típicamente *infravaloran* la variabilidad muestral verdadera: los estadísticos $t$ resultan demasiado grandes, los $p$-valores demasiado pequeños y los intervalos de confianza demasiado estrechos. Los "estadísticos $t$ optimistas" de la pregunta motivadora son exactamente este artefacto.
+3. **Los errores estándar habituales de MCO son incorrectos.** La fórmula de manual $\operatorname{Var}(\hat{\beta}) = \sigma^2 (\mathbf{X}'\mathbf{X})^{-1}$ presupone $\operatorname{Var}(\mathbf{u}) = \sigma^2 \mathbf{I}_n$, supuesto que falla. Bajo autocorrelación **positiva**, los errores estándar reportados por MCO típicamente *infravaloran* la variabilidad muestral verdadera: los estadísticos $t$ resultan demasiado grandes, los $p$-valores demasiado pequeños y los intervalos de confianza demasiado estrechos. Los "estadísticos $t$ optimistas" de la pregunta motivadora son exactamente este artefacto.
 
 ::: {.callout-warning}
 ## Causalidad frente a eficiencia: la trampa del retardo de la variable dependiente
@@ -322,11 +322,11 @@ y_n - \rho\,y_{n-1}
 \end{pmatrix}.
 $$
 
-Aplicando MCO a $(\mathbf{Y}^*, \mathbf{X}^*)$ se obtiene $\hat{\boldsymbol\beta}_{\text{MCG}}$.
+Aplicando MCO a $(\mathbf{Y}^*, \mathbf{X}^*)$ se obtiene $\hat{\beta}_{\text{MCG}}$.
 
 ### 8.4.2 El procedimiento iterativo de Cochrane-Orcutt
 
-La pega: $\rho$ es desconocido. Hay que estimarlo. El procedimiento de **Cochrane-Orcutt (CO)** es el algoritmo de MCG factibles más sencillo: alternar entre estimar $\rho$ a partir de los residuos y reestimar $\boldsymbol\beta$ sobre los datos cuasi-diferenciados, hasta que $\rho$ se estabilice.
+La pega: $\rho$ es desconocido. Hay que estimarlo. El procedimiento de **Cochrane-Orcutt (CO)** es el algoritmo de MCG factibles más sencillo: alternar entre estimar $\rho$ a partir de los residuos y reestimar $\beta$ sobre los datos cuasi-diferenciados, hasta que $\rho$ se estabilice.
 
 ::: {.callout-note}
 ## Algoritmo: procedimiento iterativo de Cochrane-Orcutt
@@ -335,7 +335,7 @@ La pega: $\rho$ es desconocido. Hay que estimarlo. El procedimiento de **Cochran
 2. Estimar $\rho$ regresando $\hat u_t$ sobre $\hat u_{t-1}$ (sin término constante):
 $$\hat\rho = \frac{\sum_{t=2}^{n}\hat u_t\,\hat u_{t-1}}{\sum_{t=2}^{n}\hat u_{t-1}^2}.$$
 3. Construir las variables cuasi-diferenciadas $y_t^* = y_t - \hat\rho\,y_{t-1}$ y $x_t^* = x_t - \hat\rho\,x_{t-1}$ (y, en la variante Prais-Winsten, la primera observación reescalada por $\sqrt{1-\hat\rho^2}$).
-4. Aplicar MCO sobre $(y_t^*, x_t^*)$ para obtener nuevos coeficientes $\hat{\boldsymbol\beta}^{(2)}$ y nuevos residuos $\hat u_t^{(2)}$.
+4. Aplicar MCO sobre $(y_t^*, x_t^*)$ para obtener nuevos coeficientes $\hat{\beta}^{(2)}$ y nuevos residuos $\hat u_t^{(2)}$.
 5. Volver al paso 2 con $\hat u_t^{(2)}$ y actualizar $\hat\rho$.
 6. Iterar hasta que $\hat\rho$ converja (la variación entre iteraciones sea despreciable).
 

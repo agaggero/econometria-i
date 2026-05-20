@@ -74,13 +74,13 @@ Supongamos que RLM.1--RLM.4 se mantienen y que solo RLM.5 falla. Tres enunciados
 ::: {.callout-note}
 ## La varianza correcta (sándwich) bajo heterocedasticidad
 
-Si recogemos las varianzas condicionales en la diagonal de una matriz $\boldsymbol{\Omega} = \operatorname{diag}(\sigma_1^2, \dots, \sigma_n^2)$, la varianza condicional *correcta* del estimador MCO es
+Si recogemos las varianzas condicionales en la diagonal de una matriz $\Omega = \operatorname{diag}(\sigma_1^2, \dots, \sigma_n^2)$, la varianza condicional *correcta* del estimador MCO es
 
 $$
-\operatorname{Var}(\hat{\boldsymbol\beta} \mid \mathbf{X}) \;=\; (\mathbf{X}'\mathbf{X})^{-1}\,\mathbf{X}'\boldsymbol{\Omega}\mathbf{X}\,(\mathbf{X}'\mathbf{X})^{-1}.
+\operatorname{Var}(\hat{\beta} \mid \mathbf{X}) \;=\; (\mathbf{X}'\mathbf{X})^{-1}\,\mathbf{X}'\Omega\mathbf{X}\,(\mathbf{X}'\mathbf{X})^{-1}.
 $$
 
-El «pan» $(\mathbf{X}'\mathbf{X})^{-1}$ rodea a la «carne» $\mathbf{X}'\boldsymbol{\Omega}\mathbf{X}$ --- y por eso esta forma se conoce universalmente como estimador **sándwich**. La fórmula MCO habitual simplemente sustituye $\boldsymbol{\Omega}$ por $\sigma^2 \mathbf{I}_n$ y colapsa el sándwich en una sola loncha. El estimador White / HC1 que usamos en el §7.4 estima $\boldsymbol{\Omega}$ por $\operatorname{diag}(\hat u_1^2, \dots, \hat u_n^2)$, con una corrección de grados de libertad para muestras finitas.
+El «pan» $(\mathbf{X}'\mathbf{X})^{-1}$ rodea a la «carne» $\mathbf{X}'\Omega\mathbf{X}$ --- y por eso esta forma se conoce universalmente como estimador **sándwich**. La fórmula MCO habitual simplemente sustituye $\Omega$ por $\sigma^2 \mathbf{I}_n$ y colapsa el sándwich en una sola loncha. El estimador White / HC1 que usamos en el §7.4 estima $\Omega$ por $\operatorname{diag}(\hat u_1^2, \dots, \hat u_n^2)$, con una corrección de grados de libertad para muestras finitas.
 :::
 
 En resumen: la heterocedasticidad es un problema de los *errores estándar*, no de los *coeficientes*. La solución pasa por reparar la maquinaria inferencial (errores estándar robustos) o, si nos podemos permitir el modelado adicional, por usar un estimador que explote la estructura de varianzas (MCP).
@@ -195,7 +195,7 @@ $$
 \operatorname{ee}_{\text{robusto}}(\hat\beta_1) \;=\; \sqrt{\,\dfrac{\displaystyle\sum_{i=1}^{n} (x_i - \bar x)^2 \,\hat u_i^2}{\Bigl[\displaystyle\sum_{i=1}^{n} (x_i - \bar x)^2\Bigr]^2}\,}.
 $$
 
-La expresión matricial general es el estimador sándwich del §7.2 con $\boldsymbol{\Omega}$ reemplazada por $\operatorname{diag}(\hat u_1^2, \dots, \hat u_n^2)$. Existen varias variantes (HC0, HC1, HC2, HC3) que difieren en su corrección de grados de libertad para muestras finitas; **HC1** es la opción por defecto de la orden `, robust` de Stata y es la habitual en el trabajo aplicado publicado.
+La expresión matricial general es el estimador sándwich del §7.2 con $\Omega$ reemplazada por $\operatorname{diag}(\hat u_1^2, \dots, \hat u_n^2)$. Existen varias variantes (HC0, HC1, HC2, HC3) que difieren en su corrección de grados de libertad para muestras finitas; **HC1** es la opción por defecto de la orden `, robust` de Stata y es la habitual en el trabajo aplicado publicado.
 
 Los errores estándar robustos dejan inalteradas las estimaciones puntuales $\hat\beta_j$. Solo se corrige la varianza --- y por tanto los estadísticos $t$, los $p$-valores y los intervalos de confianza.
 
@@ -487,10 +487,10 @@ El test de Goldfeld--Quandt compara:
 
 *La respuesta completa se ofrece en la Edición del Instructor.*
 
-**Ejercicio 7.4 ★★ --- Por qué el sándwich.** Demuestra que bajo homocedasticidad ($\boldsymbol{\Omega} = \sigma^2 \mathbf{I}_n$), la varianza sándwich
+**Ejercicio 7.4 ★★ --- Por qué el sándwich.** Demuestra que bajo homocedasticidad ($\Omega = \sigma^2 \mathbf{I}_n$), la varianza sándwich
 
 $$
-(\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'\boldsymbol{\Omega}\mathbf{X}(\mathbf{X}'\mathbf{X})^{-1}
+(\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'\Omega\mathbf{X}(\mathbf{X}'\mathbf{X})^{-1}
 $$
 
 se reduce a la varianza MCO habitual $\sigma^2(\mathbf{X}'\mathbf{X})^{-1}$. Usa este resultado para argumentar, en un párrafo, que el error estándar robusto *nunca es peor asintóticamente* que el error estándar MCO.

@@ -9,7 +9,7 @@ title: "El Modelo de Regresión Lineal Múltiple"
 Al terminar el capítulo el lector debería ser capaz de:
 
 - Explicar por qué la regresión lineal simple rara vez basta para un trabajo empírico creíble, y leer cada pendiente del modelo múltiple como un efecto parcial *ceteris paribus*.
-- Escribir el modelo de regresión lineal múltiple en forma matricial, $\mathbf{y} = \mathbf{X}\boldsymbol{\beta} + \mathbf{u}$, y derivar la solución MCO $\hat{\boldsymbol{\beta}} = (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'\mathbf{y}$.
+- Escribir el modelo de regresión lineal múltiple en forma matricial, $\mathbf{y} = \mathbf{X}\beta + \mathbf{u}$, y derivar la solución MCO $\hat{\beta} = (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'\mathbf{y}$.
 - Enunciar los supuestos de Gauss--Markov RLM.1--RLM.5 y reconocer cuál de ellos viola cada patología empírica habitual.
 - Demostrar, en forma matricial, que MCO es insesgado bajo RLM.1--RLM.4 y tiene varianza $\sigma^2(\mathbf{X}'\mathbf{X})^{-1}$ bajo RLM.1--RLM.5.
 - Predecir la *dirección* y el *signo* del sesgo de variable omitida (SVO) a partir de una regresión auxiliar, y verificarlo numéricamente con datos reales.
@@ -89,37 +89,37 @@ $$
 \vdots & \vdots & \vdots & \ddots & \vdots \\
 1 & x_{n1} & x_{n2} & \cdots & x_{nk}
 \end{pmatrix}_{n\times (k+1)}, \quad
-\boldsymbol{\beta} = \begin{pmatrix} \beta_0 \\ \beta_1 \\ \vdots \\ \beta_k \end{pmatrix}_{(k+1)\times 1}, \quad
+\beta = \begin{pmatrix} \beta_0 \\ \beta_1 \\ \vdots \\ \beta_k \end{pmatrix}_{(k+1)\times 1}, \quad
 \mathbf{u} = \begin{pmatrix} u_1 \\ u_2 \\ \vdots \\ u_n \end{pmatrix}_{n\times 1}.
 $$
 
 El modelo RLM para toda la muestra es entonces
 $$
-\mathbf{y} \;=\; \mathbf{X}\boldsymbol{\beta} + \mathbf{u}.
+\mathbf{y} \;=\; \mathbf{X}\beta + \mathbf{u}.
 $$
 
 La primera columna de $\mathbf{X}$ es una columna de unos, que absorbe el intercepto $\beta_0$. A partir de ahora escribiremos las demostraciones en forma matricial; es la notación estándar de [@wooldridge2020] y rinde frutos a partir del Capítulo 4.
 
 ## 3.4 MCO en forma matricial
 
-El estimador de mínimos cuadrados ordinarios (MCO) elige $\hat{\boldsymbol{\beta}}$ minimizando la suma de cuadrados de los residuos
+El estimador de mínimos cuadrados ordinarios (MCO) elige $\hat{\beta}$ minimizando la suma de cuadrados de los residuos
 $$
-\mathrm{SCR}(\boldsymbol{\beta}) \;=\; (\mathbf{y}-\mathbf{X}\boldsymbol{\beta})'(\mathbf{y}-\mathbf{X}\boldsymbol{\beta})
-\;=\; \mathbf{y}'\mathbf{y} - 2\boldsymbol{\beta}'\mathbf{X}'\mathbf{y} + \boldsymbol{\beta}'\mathbf{X}'\mathbf{X}\boldsymbol{\beta}.
+\mathrm{SCR}(\beta) \;=\; (\mathbf{y}-\mathbf{X}\beta)'(\mathbf{y}-\mathbf{X}\beta)
+\;=\; \mathbf{y}'\mathbf{y} - 2\beta'\mathbf{X}'\mathbf{y} + \beta'\mathbf{X}'\mathbf{X}\beta.
 $$
 
-Derivando respecto de $\boldsymbol{\beta}$ e igualando a cero obtenemos las **ecuaciones normales**
+Derivando respecto de $\beta$ e igualando a cero obtenemos las **ecuaciones normales**
 $$
-\mathbf{X}'\mathbf{X}\,\hat{\boldsymbol{\beta}} \;=\; \mathbf{X}'\mathbf{y}.
+\mathbf{X}'\mathbf{X}\,\hat{\beta} \;=\; \mathbf{X}'\mathbf{y}.
 $$
 
 Si $\mathbf{X}'\mathbf{X}$ es invertible --- lo que es exactamente el Supuesto RLM.3 más abajo --- la solución única es
 
 $$
-\boxed{\;\hat{\boldsymbol{\beta}} \;=\; (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'\mathbf{y}.\;}
+\boxed{\;\hat{\beta} \;=\; (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'\mathbf{y}.\;}
 $$
 
-Los valores ajustados son $\hat{\mathbf{y}} = \mathbf{X}\hat{\boldsymbol{\beta}}$ y los residuos $\hat{\mathbf{u}} = \mathbf{y} - \hat{\mathbf{y}}$. Por construcción, las ecuaciones normales implican $\mathbf{X}'\hat{\mathbf{u}} = \mathbf{0}$: los residuos son ortogonales a todos los regresores, incluida la constante. En particular, la media muestral de $\hat{\mathbf{u}}$ es cero siempre que el modelo contenga un intercepto.
+Los valores ajustados son $\hat{\mathbf{y}} = \mathbf{X}\hat{\beta}$ y los residuos $\hat{\mathbf{u}} = \mathbf{y} - \hat{\mathbf{y}}$. Por construcción, las ecuaciones normales implican $\mathbf{X}'\hat{\mathbf{u}} = \mathbf{0}$: los residuos son ortogonales a todos los regresores, incluida la constante. En particular, la media muestral de $\hat{\mathbf{u}}$ es cero siempre que el modelo contenga un intercepto.
 
 ::: {.callout-warning}
 ## Error frecuente: confundir $u$ con $\hat u$
@@ -187,21 +187,21 @@ RLM.3 solo descarta la dependencia lineal *exacta* entre los regresores. Dos var
 
 Bajo RLM.1--RLM.4,
 $$
-\mathbb{E}[\hat{\boldsymbol{\beta}}\mid\mathbf{X}] = \boldsymbol{\beta}.
+\mathbb{E}[\hat{\beta}\mid\mathbf{X}] = \beta.
 $$
 :::
 
 *Esquema de la demostración.* Partiendo de la solución MCO,
 $$
-\hat{\boldsymbol{\beta}} = (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'\mathbf{y}
-= (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'(\mathbf{X}\boldsymbol{\beta} + \mathbf{u})
-= \boldsymbol{\beta} + (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'\mathbf{u}.
+\hat{\beta} = (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'\mathbf{y}
+= (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'(\mathbf{X}\beta + \mathbf{u})
+= \beta + (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'\mathbf{u}.
 $$
 Tomando esperanzas condicionales y usando RLM.4 ($\mathbb{E}[\mathbf{u}\mid\mathbf{X}] = \mathbf{0}$),
 $$
-\mathbb{E}[\hat{\boldsymbol{\beta}}\mid\mathbf{X}] = \boldsymbol{\beta} + (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}' \mathbb{E}[\mathbf{u}\mid\mathbf{X}] = \boldsymbol{\beta}.
+\mathbb{E}[\hat{\beta}\mid\mathbf{X}] = \beta + (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}' \mathbb{E}[\mathbf{u}\mid\mathbf{X}] = \beta.
 $$
-Por la ley de esperanzas iteradas, $\mathbb{E}[\hat{\boldsymbol{\beta}}] = \boldsymbol{\beta}$ también de forma incondicional. $\quad\square$
+Por la ley de esperanzas iteradas, $\mathbb{E}[\hat{\beta}] = \beta$ también de forma incondicional. $\quad\square$
 
 La demostración deja transparente el papel de RLM.4: cualquier correlación entre $\mathbf{X}$ y $\mathbf{u}$ entra en el término de sesgo $(\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}' \mathbb{E}[\mathbf{u}\mid\mathbf{X}]$. Esta es la versión matricial del SVO que deduciremos en §3.9.
 
@@ -212,13 +212,13 @@ La demostración deja transparente el papel de RLM.4: cualquier correlación ent
 
 Bajo RLM.1--RLM.5,
 $$
-\operatorname{Var}(\hat{\boldsymbol{\beta}}\mid\mathbf{X}) = \sigma^2 (\mathbf{X}'\mathbf{X})^{-1}.
+\operatorname{Var}(\hat{\beta}\mid\mathbf{X}) = \sigma^2 (\mathbf{X}'\mathbf{X})^{-1}.
 $$
 :::
 
-*Esquema de la demostración.* De la prueba de insesgadez, $\hat{\boldsymbol{\beta}} - \boldsymbol{\beta} = (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'\mathbf{u}$. Por tanto
+*Esquema de la demostración.* De la prueba de insesgadez, $\hat{\beta} - \beta = (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'\mathbf{u}$. Por tanto
 $$
-\operatorname{Var}(\hat{\boldsymbol{\beta}}\mid\mathbf{X})
+\operatorname{Var}(\hat{\beta}\mid\mathbf{X})
 = (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'\, \operatorname{Var}(\mathbf{u}\mid\mathbf{X})\, \mathbf{X}(\mathbf{X}'\mathbf{X})^{-1}
 = (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'\,(\sigma^2\mathbf{I}_n)\,\mathbf{X}(\mathbf{X}'\mathbf{X})^{-1}
 = \sigma^2 (\mathbf{X}'\mathbf{X})^{-1}.

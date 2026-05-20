@@ -71,7 +71,7 @@ La tabla siguiente empareja los capítulos de este libro con los del Wooldridge 
 
 Aunque los dos libros cubren el mismo núcleo de econometría introductoria, presentan el material con énfasis distintos. Conviene tenerlo en mente al alternar lecturas.
 
-**Forma matricial.** Wooldridge introduce la forma matricial de MCO temprano (Apéndice E, referenciado ya desde §3.4) y la usa como herramienta unificadora en los capítulos avanzados. CGL pospone el tratamiento matricial hasta un apéndice final y trabaja casi todo el libro en notación escalar. Si el lector viene de CGL y se encuentra por primera vez con $\hat{\boldsymbol{\beta}} = (X'X)^{-1} X'\mathbf{y}$, conviene repasar el §A.5 de este libro antes de seguir.
+**Forma matricial.** Wooldridge introduce la forma matricial de MCO temprano (Apéndice E, referenciado ya desde §3.4) y la usa como herramienta unificadora en los capítulos avanzados. CGL pospone el tratamiento matricial hasta un apéndice final y trabaja casi todo el libro en notación escalar. Si el lector viene de CGL y se encuentra por primera vez con $\hat{\beta} = (X'X)^{-1} X'\mathbf{y}$, conviene repasar el §A.5 de este libro antes de seguir.
 
 **Conjuntos de datos y ejemplos.** Wooldridge ancla la mayoría de sus ejemplos en el mercado laboral estadounidense: salarios (`wage1`, `wage2`), educación, vivienda (`hprice1`), y delincuencia. CGL prefiere el **gasto en alimentos** como ejemplo recurrente del Capítulo 2 en adelante —un conjunto de datos pequeño y muy didáctico— y completa con datos de demanda, producción y mercados financieros. Las prácticas de este libro siguen a Wooldridge para que la base `wooldridge` de R sea la única dependencia.
 

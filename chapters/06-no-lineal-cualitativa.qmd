@@ -105,8 +105,8 @@ Tomar el logaritmo natural de uno o de ambos lados de la ecuación de regresión
 |--------|-------------|---------------|------------------------------|
 | Nivel-nivel | $y$ | $x$ | $\Delta y = \beta_1\,\Delta x$ (unidades de $y$ por unidad de $x$) |
 | Log-nivel | $\ln(y)$ | $x$ | $\%\Delta y \approx 100\,\beta_1\,\Delta x$ (semi-elasticidad) |
-| Nivel-log | $y$ | $\ln(x)$ | $\Delta y \approx (\beta_1/100)\,\%\Delta x$ |
-| Log-log | $\ln(y)$ | $\ln(x)$ | $\%\Delta y \approx \beta_1\,\%\Delta x$ (elasticidad) |
+| Nivel-log | $y$ | $\ln(x)$ | $\Delta y \approx (\beta_1/100)\%\Delta x$ |
+| Log-log | $\ln(y)$ | $\ln(x)$ | $\%\Delta y \approx \beta_1\%\Delta x$ (elasticidad) |
 
 Hay tres razones prácticas para tomar logaritmos de una variable estrictamente positiva como el salario o la renta: reducir la asimetría a la derecha, estabilizar la varianza (un remedio parcial frente a ciertas formas de heterocedasticidad; véase el Capítulo 7) y dar a los coeficientes una lectura en porcentaje. La especificación log-log es especialmente habitual cuando la teoría económica predice elasticidad constante (por ejemplo, funciones de producción Cobb-Douglas o demandas isoelásticas).
 
@@ -117,7 +117,7 @@ Si la ecuación estimada es
 $$
 \widehat{\ln(\text{wage})} = 1{,}5 + 0{,}02\,\text{age},
 $$
-entonces un año adicional de edad se asocia con aproximadamente un $0{,}02 \times 100 = 2\,\%$ de aumento en el salario, manteniendo el resto constante. La aproximación $\%\Delta y \approx 100\,\beta_1$ es precisa para $\beta_1$ pequeño; para coeficientes grandes el cambio porcentual exacto es $100\,(e^{\beta_1} - 1)$.
+entonces un año adicional de edad se asocia con aproximadamente un $0{,}02 \times 100 = 2\%$ de aumento en el salario, manteniendo el resto constante. La aproximación $\%\Delta y \approx 100\,\beta_1$ es precisa para $\beta_1$ pequeño; para coeficientes grandes el cambio porcentual exacto es $100\,(e^{\beta_1} - 1)$.
 :::
 
 ::: {.callout-warning}
