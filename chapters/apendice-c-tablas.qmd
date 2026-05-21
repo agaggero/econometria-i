@@ -2,7 +2,6 @@
 title: "Tablas estadísticas"
 ---
 
-> *Estado: portado 2026-05-18. Las tablas se generan reproduciblemente desde funciones de distribución de R, salvo las cotas de Durbin-Watson (Durbin y Watson 1951).*
 
 Este apéndice reúne los **valores críticos** de las cuatro distribuciones que aparecen en los contrastes del libro: la $t$ de Student (Cap. 4, contrastes sobre un coeficiente), la $F$ de Snedecor (Cap. 4, restricciones múltiples; Cap. 7, Breusch–Pagan), la $\chi^2$ (Cap. 7 y 8, contrastes de heterocedasticidad y autocorrelación) y las cotas de Durbin–Watson (Cap. 8). Las tablas se generan en el momento, llamando a `qt()`, `qf()` y `qchisq()` sobre los grados de libertad estándar, de modo que son exactas hasta la precisión de máquina —a diferencia de las tablas impresas, que suelen redondear al cuarto decimal.
 

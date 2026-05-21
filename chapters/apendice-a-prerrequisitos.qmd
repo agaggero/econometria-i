@@ -2,7 +2,6 @@
 title: "Prerrequisitos matemáticos y estadísticos"
 ---
 
-> *Estado: portado 2026-05-18. El Tema 0 español es la fuente canónica (G8); este apéndice alimenta al inglés.*
 
 Este apéndice recoge, en formato de referencia rápida, las herramientas matemáticas y estadísticas que el libro asume conocidas. No pretende sustituir un curso de cálculo, probabilidad o álgebra lineal; el objetivo es **fijar la notación** —la de @wooldridge2020— y **recordar las propiedades** que se usan a lo largo del texto: el logaritmo en las elasticidades del Capítulo 6, las condiciones de primer orden en la derivación de MCO del Capítulo 2, las propiedades de la varianza y la covarianza en la fórmula del estimador, la distribución muestral del Capítulo 4 y la forma matricial del Capítulo 3.
 

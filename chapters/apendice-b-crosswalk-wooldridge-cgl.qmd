@@ -2,7 +2,6 @@
 title: "Crosswalk Wooldridge ↔ Carter–Griffiths–Lim"
 ---
 
-> *Estado: portado 2026-05-18. Revisión editorial: pendiente.*
 
 ## B.1 Por qué este crosswalk
 
