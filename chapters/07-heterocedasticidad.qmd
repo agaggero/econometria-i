@@ -20,7 +20,7 @@ Al finalizar este capítulo el lector debería ser capaz de:
 
 Una regresión del salario por hora sobre los años de educación entrega una estimación puntual limpia del rendimiento de la escolarización. Pero la dispersión de los salarios alrededor de la recta de regresión **no** es la misma para quienes abandonan la secundaria y para los doctorados: los graduados se reparten en un rango salarial mucho más amplio. La fórmula MCO de manual para el error estándar de $\hat\beta_1$ supone que la dispersión es constante. Cuando no lo es, los errores estándar reportados son incorrectos, los estadísticos $t$ son incorrectos y las recomendaciones de política construidas sobre ellos son incorrectas. Este capítulo muestra cómo diagnosticar el problema y cómo arreglarlo.
 
-## 7.1 Introducción
+## Introducción
 
 `\lettrine[lines=3]{E}{n}`{=latex} el Capítulo 4 enumeramos los supuestos RLM.1--RLM.6 del modelo de regresión lineal múltiple que justifican MCO. El supuesto de **homocedasticidad** RLM.5 establece que la varianza del error es la misma para cualquier valor de los regresores:
 
@@ -62,7 +62,7 @@ La heterocedasticidad es **la regla, no la excepción**, en los datos microecon�
 Estas son precisamente las estructuras de datos con las que trabajan los economistas aplicados, lo que explica por qué los errores estándar robustos se han convertido en la práctica por defecto en la econometría moderna.
 :::
 
-## 7.2 Consecuencias de la heterocedasticidad
+## Consecuencias de la heterocedasticidad
 
 Supongamos que RLM.1--RLM.4 se mantienen y que solo RLM.5 falla. Tres enunciados resumen las consecuencias:
 
@@ -84,17 +84,17 @@ El «pan» $(\mathbf{X}'\mathbf{X})^{-1}$ rodea a la «carne» $\mathbf{X}'\Omeg
 
 En resumen: la heterocedasticidad es un problema de los *errores estándar*, no de los *coeficientes*. La solución pasa por reparar la maquinaria inferencial (errores estándar robustos) o, si nos podemos permitir el modelado adicional, por usar un estimador que explote la estructura de varianzas (MCP).
 
-## 7.3 Detección de la heterocedasticidad
+## Detección de la heterocedasticidad
 
 Describimos un diagnóstico informal y dos contrastes formales. El gráfico informal es barato y debería ser lo primero que se mira; los contrastes formales proporcionan una regla de decisión estructurada.
 
-### 7.3.1 Detección informal: gráficos de residuos
+### Detección informal: gráficos de residuos
 
 Después de estimar el modelo por MCO, se calculan los residuos $\hat u_i = y_i - \hat y_i$ y se representan frente a los valores ajustados $\hat y_i$ o frente a cada regresor $x_j$. La huella visual de la heterocedasticidad es una forma de **abanico** o **cuña**: la dispersión vertical de la nube de residuos se ensancha (o se estrecha) a medida que avanzamos por el eje horizontal. Los residuos al cuadrado $\hat u_i^2$ frente a $x_j$ hacen el patrón aún más obvio, porque ya no importa el signo del residuo.
 
 Si la nube parece una banda horizontal de espesor aproximadamente constante, la homocedasticidad es plausible. Si se abre --- como típicamente ocurre cuando $x_j$ es renta, tamaño de la empresa o cualquier otra variable de «escala» --- la heterocedasticidad es la sospechosa natural.
 
-### 7.3.2 El test de Goldfeld--Quandt
+### El test de Goldfeld--Quandt
 
 El test de Goldfeld--Quandt (GQ) es apropiado cuando se sospecha que la heterocedasticidad está impulsada por **un** regresor concreto. La idea es simple: dividir la muestra en un grupo de $x$ bajo y un grupo de $x$ alto, y comparar las varianzas residuales de las dos submuestras.
 
@@ -113,7 +113,7 @@ $$
 
 El test GQ fue históricamente popular en muestras pequeñas y resulta intuitivo, pero exige al analista *comprometerse* con una única variable de ordenación y con una regla de partición de la muestra. El test de Breusch--Pagan, que presentamos a continuación, prescinde de ambos compromisos.
 
-### 7.3.3 El test de Breusch--Pagan
+### El test de Breusch--Pagan
 
 El test de Breusch--Pagan (BP) detecta heterocedasticidad relacionada con **cualquiera** de los regresores. Es el contraste formal de cabecera en el trabajo aplicado moderno.
 
@@ -144,11 +144,11 @@ La intuición es directa: si el residuo al cuadrado se explica *sistemáticament
 No conviene ejecutar GQ, luego BP, luego White, y reportar el que rechaza «primero». Es una forma de $p$-hacking. Elige un test basándote en lo que sospechas *antes* de mirar los residuos, o --- siguiendo la práctica moderna --- omite directamente la fase de contraste y reporta errores estándar robustos por defecto.
 :::
 
-## 7.4 Soluciones
+## Soluciones
 
 Existen dos soluciones principales, adaptadas a dos estados distintos del conocimiento.
 
-### 7.4.1 Mínimos Cuadrados Ponderados (MCP)
+### Mínimos Cuadrados Ponderados (MCP)
 
 Supongamos que conocemos (o estamos dispuestos a modelar) la forma de la varianza condicional:
 
@@ -184,7 +184,7 @@ Cada observación recibe un peso $w_i = 1 / h(\mathbf{x}_i)$. Las observaciones 
 MCP solo es ELIO bajo pesos *correctamente especificados*. Con pesos equivocados puede ser *menos* eficiente que MCO, y sus errores estándar vuelven a ser incorrectos. Si solo se tiene una idea vaga de la estructura de varianzas, conviene preferir errores estándar robustos.
 :::
 
-### 7.4.2 Errores estándar robustos a la heterocedasticidad
+### Errores estándar robustos a la heterocedasticidad
 
 Cuando se desconoce la forma de $h(\mathbf{x})$, la solución más segura es mantener MCO para las estimaciones puntuales y calcular **errores estándar consistentes a la heterocedasticidad (HC)**, también llamados **robustos** o **de White**, en honor a [@white1980].
 
@@ -206,7 +206,7 @@ Los errores estándar robustos dejan inalteradas las estimaciones puntuales $\ha
 - **En la duda** $\Rightarrow$ reportar errores estándar robustos. En la econometría aplicada moderna, los errores estándar robustos se han convertido en la opción por defecto, no en un plan B. Muchas revistas los esperan por construcción.
 :::
 
-## 7.5 Práctica: Heterocedasticidad en R
+## Práctica: Heterocedasticidad en R
 
 Esta práctica corresponde a la Práctica 8 del curso. El conjunto de datos `het_datos.xlsx` es una sección cruzada propia de consumo y renta a nivel de hogar, dividida en tres tramos de renta (`grupo` $\in \{1, 2, 3\}$, de bajo a alto). Estimamos una regresión simple de tipo curva de Engel del consumo sobre la renta, detectamos heterocedasticidad y a continuación la corregimos por dos vías --- primero por MCP y después con errores estándar robustos.
 

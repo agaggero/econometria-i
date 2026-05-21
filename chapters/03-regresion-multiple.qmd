@@ -20,7 +20,7 @@ Al terminar el capítulo el lector debería ser capaz de:
 
 El Capítulo 1 mostró que la brecha bruta de salarios por nivel educativo en `wage1` confunde el efecto de la escolaridad con el de la experiencia, la antigüedad y los rasgos demográficos; el Capítulo 2 estimó una regresión simple de `wage` sobre `educ` y advirtió de forma explícita que la pendiente MCO no podía leerse en clave causal. El modelo de regresión lineal múltiple (RLM) es la herramienta de trabajo que nos permite tomar en serio esa advertencia: al incluir controles, pasamos de medias condicionales brutas a **efectos parciales** --- el cambio en $y$ asociado a un cambio unitario en un regresor, *manteniendo fijos los demás*.
 
-## 3.1 Motivación: el problema de la regresión simple
+## Motivación: el problema de la regresión simple
 
 `\lettrine[lines=3]{E}{l}`{=latex} modelo de regresión lineal simple
 $$
@@ -49,7 +49,7 @@ Dos advertencias merecen subrayarse desde el principio:
 - Añadir controles **no** equivale a identificar causalidad. Veremos en §3.9 que el sesgo solo desaparece para las variables cuyos confundidores relevantes incluimos efectivamente.
 - Incluir demasiados regresores, o regresores muy correlacionados, puede *inflar la varianza* sin reducir el sesgo. No hay almuerzo gratis.
 
-## 3.2 El modelo RLM
+## El modelo RLM
 
 ::: {.callout-note}
 ## Definición: el modelo de regresión lineal múltiple
@@ -77,7 +77,7 @@ afirma: entre dos trabajadores con la *misma* edad, experiencia y antigüedad qu
 Un error muy extendido consiste en leer $\hat\beta_1$ como «el efecto sobre $y$ de cambiar $x_1$», sin la cláusula condicional. En RLM toda pendiente es condicional al resto de regresores incluidos. Si cambian los controles del modelo, cambia el significado de $\beta_1$ --- no solo su valor numérico.
 :::
 
-## 3.3 Notación matricial
+## Notación matricial
 
 Para una muestra de $n$ observaciones resulta mucho más limpio apilar el modelo en forma matricial. Definimos
 $$
@@ -99,7 +99,7 @@ $$
 
 La primera columna de $\mathbf{X}$ es una columna de unos, que absorbe el intercepto $\beta_0$. A partir de ahora escribiremos las demostraciones en forma matricial; es la notación estándar de [@wooldridge2020] y rinde frutos a partir del Capítulo 4.
 
-## 3.4 MCO en forma matricial
+## MCO en forma matricial
 
 El estimador de mínimos cuadrados ordinarios (MCO) elige $\hat{\beta}$ minimizando la suma de cuadrados de los residuos
 $$
@@ -126,7 +126,7 @@ Los valores ajustados son $\hat{\mathbf{y}} = \mathbf{X}\hat{\beta}$ y los resid
 Como en el Capítulo 1, $u$ es un objeto *poblacional* e inobservable. El residuo $\hat u_i = y_i - \hat y_i$ es su contrapartida *muestral*, producida *tras* la estimación. Usaremos $\hat{\mathbf{u}}$ para calcular estimadores de varianza y el $R^2$, pero nunca observaremos $\mathbf{u}$ propiamente dicho.
 :::
 
-## 3.5 Supuestos de Gauss--Markov para RLM
+## Supuestos de Gauss--Markov para RLM
 
 Recopilamos ahora los supuestos bajo los que MCO tiene sus propiedades clásicas. Generalizan los del Capítulo 2 sobre regresión simple.
 
@@ -179,7 +179,7 @@ Los supuestos RLM.1--RLM.4 proporcionan la **insesgadez** (siguiente sección); 
 RLM.3 solo descarta la dependencia lineal *exacta* entre los regresores. Dos variables altamente correlacionadas --- pero no perfectamente correlacionadas --- (por ejemplo `educ` y un test de aptitud `IQ`) siguen cumpliendo RLM.3. Inflarán la varianza de los estimadores MCO (el $R_j^2$ de la fórmula de varianza estará cerca de 1), pero no los sesgan ni rompen el modelo.
 :::
 
-## 3.6 Insesgadez de MCO (forma matricial)
+## Insesgadez de MCO (forma matricial)
 
 ::: {.callout-note}
 ## Teorema: insesgadez de MCO
@@ -204,7 +204,7 @@ Por la ley de esperanzas iteradas, $\mathbb{E}[\hat{\beta}] = \beta$ también de
 
 La demostración deja transparente el papel de RLM.4: cualquier correlación entre $\mathbf{X}$ y $\mathbf{u}$ entra en el término de sesgo $(\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}' \mathbb{E}[\mathbf{u}\mid\mathbf{X}]$. Esta es la versión matricial del SVO que deduciremos en §3.9.
 
-## 3.7 Varianza de los estimadores MCO (forma matricial)
+## Varianza de los estimadores MCO (forma matricial)
 
 ::: {.callout-note}
 ## Teorema: varianza de MCO
@@ -240,7 +240,7 @@ $$
 $$
 que es insesgada bajo RLM.1--RLM.5. El denominador $n - k - 1$ son los grados de libertad: tamaño muestral menos número de coeficientes estimados (incluido el intercepto).
 
-## 3.8 $R^2$ y $R^2$ ajustado
+## $R^2$ y $R^2$ ajustado
 
 Como en la regresión simple, la variación total de $y$ se descompone en variación explicada y residual,
 $$
@@ -264,7 +264,7 @@ A diferencia del $R^2$, el $\bar R^2$ puede *disminuir* cuando se añade una var
 Un $R^2$ alto no implica que el modelo sea causal, ni que prediga bien fuera de la muestra. Una regresión de `educ` sobre `educ_squared` y `educ_cubed` tendrá un $R^2$ próximo a 1 y ningún contenido económico. Trate al $R^2$ como un *resumen* de bondad de ajuste, no como un criterio de selección de modelos. El AIC y el BIC, introducidos en el Capítulo 5, son más apropiados para esta última tarea.
 :::
 
-## 3.9 Sesgo de variable omitida (SVO)
+## Sesgo de variable omitida (SVO)
 
 El sesgo de variable omitida (SVO) es el nombre formal del problema motivado en §3.1. Supongamos que el modelo poblacional **verdadero** es
 $$
@@ -334,7 +334,7 @@ Es el clásico «sesgo de habilidad» de la literatura de economía laboral. Una
 Añadir una variable cuyo coeficiente verdadero es cero **no** introduce sesgo (la fórmula del SVO da sesgo $= 0 \cdot \tilde\delta_1 = 0$). Pero infla la varianza de todas las demás pendientes a través del término $R_j^2$ de §3.7. La regla práctica es: incluya controles que la teoría o su estrategia de identificación justifique, no regresores que casualmente «parezcan significativos».
 :::
 
-## 3.10 Práctica: Regresión Múltiple en R
+## Práctica: Regresión Múltiple en R
 
 Trabajamos de nuevo con `wage1` --- una sección cruzada de 526 trabajadores estadounidenses de mayo de 1976, distribuida con el paquete `wooldridge`. La práctica tiene tres partes: regresiones salariales anidadas, demostración numérica del SVO y una advertencia de multicolinealidad perfecta.
 

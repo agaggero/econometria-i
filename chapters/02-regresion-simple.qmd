@@ -21,7 +21,7 @@ Al terminar este capítulo, el lector debería ser capaz de:
 
 La literatura de economía laboral [@wooldridge2020] documenta desde hace décadas una *prima por apariencia* (*beauty premium*): los trabajadores percibidos como más atractivos físicamente tienden a ganar salarios más altos. Si esa prima es causal (la apariencia abre puertas) o si refleja otros factores correlacionados con ella (salud, habilidades sociales, origen familiar) es una pregunta distinta. Pero antes de poder *plantearla* necesitamos una herramienta que convierta una nube de puntos en un único número. Esa herramienta es la **regresión lineal simple** del salario sobre una medida de apariencia. En §2.11 se estima exactamente esta regresión sobre el conjunto de datos `beauty` de Hamermesh.
 
-## 2.1 Introducción
+## Introducción
 
 `\lettrine[lines=3]{E}{l}`{=latex} análisis de regresión investiga la relación entre dos o más variables. En este capítulo nos centramos en el modelo de **Regresión Lineal Simple** (RLS), que relaciona una variable dependiente $y$ con una única variable independiente $x$:
 
@@ -49,7 +49,7 @@ Cada uno de los siguientes es una regresión lineal simple de una variable de re
 - Presión arterial sobre edad: $\widehat{\text{PA}} = 100 + 0{,}5\cdot\text{Edad}$.
 :::
 
-## 2.2 La Función de Regresión Poblacional
+## La Función de Regresión Poblacional
 
 El modelo $y = \beta_0 + \beta_1 x + u$ contiene la perturbación no observable $u$. Para convertirlo en un enunciado contrastable se impone un supuesto clave sobre la media condicional del error:
 
@@ -79,7 +79,7 @@ El problema fundamental de la FRP es que **no se puede observar**: es un enuncia
 La FRP $\mathbb{E}[y \mid x] = \beta_0 + \beta_1 x$ es una propiedad de la *población*: $\beta_0$ y $\beta_1$ son fijos pero desconocidos. La FRM $\hat y = \hat\beta_0 + \hat\beta_1 x$ (sección siguiente) es una recta *aleatoria* cuyo intercepto y pendiente varían de una muestra a otra. Confundir ambas es el error conceptual más frecuente del curso.
 :::
 
-## 2.3 La Función de Regresión Muestral
+## La Función de Regresión Muestral
 
 Sea $\{(x_i, y_i) : i = 1, 2, \ldots, n\}$ una muestra aleatoria de tamaño $n$ extraída de la población. Para cada observación $i$ el modelo poblacional es
 
@@ -95,7 +95,7 @@ $$
 
 donde $\hat\beta_0$ y $\hat\beta_1$ son **estimaciones** de los parámetros poblacionales $\beta_0$ y $\beta_1$ obtenidas a partir de los datos. Los acentos circunflejos recuerdan en todo momento que se trata de cantidades muestrales. Dos muestras distintas de la misma población darán, en general, dos FRM distintas.
 
-## 2.4 Mínimos Cuadrados Ordinarios (MCO)
+## Mínimos Cuadrados Ordinarios (MCO)
 
 Dado un diagrama de dispersión de pares $(x_i, y_i)$, podrían trazarse infinitas rectas a través de la nube de puntos, cada una con un $(\hat\beta_0, \hat\beta_1)$ distinto. ¿Cómo elegir la «mejor» recta?
 
@@ -167,7 +167,7 @@ La definición formal del residuo $\hat u_i$ aparece en §2.4.1; la derivación 
 *Data: 41 estudiantes de Econometría I, curso 2024--25, UGR (recogidos por el autor).*
 :::
 
-### 2.4.1 El residuo
+### El residuo
 
 Para cada observación $i$, el **residuo** es la distancia vertical entre el valor observado $y_i$ y el valor predicho por la FRM:
 
@@ -177,7 +177,7 @@ $$
 
 El residuo es el análogo muestral de la perturbación poblacional $u_i$. Es observable en cuanto se dispone de las estimaciones $(\hat\beta_0, \hat\beta_1)$; la perturbación $u_i$, en cambio, *nunca* es observable.
 
-### 2.4.2 La suma de cuadrados de los residuos
+### La suma de cuadrados de los residuos
 
 Se busca la recta que haga los residuos lo más pequeños posible en algún sentido global. Elevarlos al cuadrado (en lugar de tomar valores absolutos) penaliza con más fuerza las desviaciones grandes y produce una función objetivo suave y diferenciable. El método de MCO elige $\hat\beta_0$ y $\hat\beta_1$ de modo que minimicen la **Suma de Cuadrados de los Residuos (SCR)**:
 
@@ -185,7 +185,7 @@ $$
 \mathrm{SCR} = \sum_{i=1}^{n} \hat u_i^{\,2} = \sum_{i=1}^{n}\bigl(y_i - \hat\beta_0 - \hat\beta_1 x_i\bigr)^2.
 $$
 
-### 2.4.3 Derivación de los estimadores MCO
+### Derivación de los estimadores MCO
 
 Derivando $\mathrm{SCR}$ respecto a $\hat\beta_0$ y $\hat\beta_1$ e igualando a cero se obtienen las **condiciones de primer orden (CPO)**:
 
@@ -234,7 +234,7 @@ La solución MCO posee tres propiedades mecánicas que se derivan directamente d
 
 Se trata de propiedades **algebraicas** de MCO: se cumplen por construcción en *cualquier* muestra, con independencia del proceso generador de los datos. No son propiedades estadísticas sobre la población.
 
-## 2.5 Los supuestos de Gauss--Markov para la RLS
+## Los supuestos de Gauss--Markov para la RLS
 
 MCO produce un número a partir de cualquier muestra, pero para que ese número tenga buenas propiedades *estadísticas* --- insesgadez, varianza mínima, errores estándar interpretables --- se necesitan supuestos sobre la población. Los cinco **supuestos de Gauss--Markov para la RLS** son la base del resto del capítulo.
 
@@ -268,7 +268,7 @@ $$
 RLS.1--RLS.3 son condiciones técnicas que aseguran que el estimador esté bien definido. RLS.4 es lo que hace al estimador **insesgado** y permite interpretar $\beta_1$ como un efecto *ceteris paribus*; es también el supuesto más difícil de verificar y el que con más frecuencia se viola en la práctica. RLS.5 solo se necesita para la fórmula de la **varianza** y para el resultado de eficiencia de Gauss--Markov, no para la insesgadez.
 :::
 
-## 2.6 Insesgadez de MCO
+## Insesgadez de MCO
 
 Bajo RLS.1--RLS.4 los estimadores MCO son insesgados. Se esboza el argumento para $\hat\beta_1$; el álgebra para $\hat\beta_0$ es análoga.
 
@@ -292,7 +292,7 @@ Por la ley de esperanzas iteradas, $\mathbb{E}[\hat\beta_1] = \beta_1$. El mismo
 La igualdad $\mathbb{E}[\hat\beta_1] = \beta_1$ *no* dice «nuestro número es exactamente correcto». Dice que si extrajésemos muchas muestras independientes de la misma población y calculásemos $\hat\beta_1$ en cada una, el promedio a largo plazo de todas esas estimaciones coincidiría con $\beta_1$. Cualquier estimación individual puede estar por encima o por debajo de la verdad.
 :::
 
-## 2.7 Varianzas muestrales de los estimadores MCO
+## Varianzas muestrales de los estimadores MCO
 
 ¿Cómo de precisas son las estimaciones MCO? Bajo RLS.1--RLS.5, condicionando en los regresores,
 
@@ -312,7 +312,7 @@ Tres factores explican la precisión de $\hat\beta_1$:
 
 Estos tres factores reaparecen, con forma similar, en todos los modelos de regresión del resto del libro.
 
-## 2.8 El teorema de Gauss--Markov
+## El teorema de Gauss--Markov
 
 El resultado fundamental que justifica usar MCO es el **teorema de Gauss--Markov**.
 
@@ -332,7 +332,7 @@ con igualdad solo si $d_i = 0$ para todo $i$, esto es, cuando $\tilde\beta_1 = \
 El teorema **no** afirma que MCO sea el mejor estimador en algún sentido absoluto. Dice: entre los estimadores *lineales* e *insesgados*, MCO tiene varianza mínima. Pueden existir estimadores *sesgados* (ridge, LASSO) o *no lineales* (regresión por cuantiles) con menor error cuadrático medio en contextos concretos.
 :::
 
-## 2.9 Estimación de $\sigma^2$
+## Estimación de $\sigma^2$
 
 La varianza del error $\sigma^2$ aparece en las fórmulas de varianza anteriores, pero es a su vez desconocida: nunca observamos los errores poblacionales $u_i$, solo los residuos $\hat u_i$. El estimador muestral natural es
 
@@ -350,7 +350,7 @@ $$
 
 El error estándar es el caballo de batalla de la inferencia en el Capítulo 4: todo lo que diremos sobre intervalos de confianza y contrastes $t$ se construye sobre él.
 
-## 2.10 Bondad de ajuste: $R^2$
+## Bondad de ajuste: $R^2$
 
 Dos regresiones pueden tener idéntica estimación de la pendiente y, sin embargo, ajustes muy distintos, según qué fracción de la variación de $y$ logre explicar el regresor. Para medir el ajuste se descompone la variación total de $y$:
 
@@ -376,7 +376,7 @@ $R^2$ es la fracción de la variación muestral de $y$ «explicada» por $x$. To
 En economía laboral, de la salud o de la educación, valores de $R^2$ del 5--15\ % son completamente normales: los resultados individuales dependen de muchos factores que nunca medimos. Un $R^2$ pequeño *no* invalida por sí solo la estimación de la pendiente --- $\hat\beta_1$ puede seguir siendo insesgado, estadísticamente significativo y relevante para la política económica. A la inversa, un $R^2$ elevado *no* valida un modelo en el que falle RLS.4: $\hat\beta_1$ puede estimarse con precisión y estar, aun así, gravemente sesgado [@cgl2017].
 :::
 
-## 2.11 Práctica: RLS en R
+## Práctica: RLS en R
 
 En esta práctica se estiman dos regresiones simples utilizando el paquete **wooldridge**: la regresión salario--apariencia de §2.4 («Práctica A») y la regresión peso al nacer--tabaquismo materno («Práctica B»). Ambas son secciones cruzadas pequeñas, ambas presentan $R^2$ reducidos y ambas ilustran la advertencia anterior.
 
@@ -387,7 +387,7 @@ data("beauty")
 data("bwght")
 ```
 
-### 2.11.1 Práctica A --- Salario y apariencia física (`beauty`)
+### Práctica A --- Salario y apariencia física (`beauty`)
 
 El conjunto de datos `beauty`, empleado por Hamermesh y Biddle (1994) y reproducido en @wooldridge2020, contiene salarios por hora y una valoración de la apariencia física en una escala de cinco puntos para una muestra de trabajadores estadounidenses. La variable `looks` toma valores enteros de 1 («poco agraciado») a 5 («muy atractivo»), siendo 3 «en la media». La variable `wage` es el salario por hora en dólares estadounidenses.
 
@@ -476,7 +476,7 @@ c(R2_manual = 1 - SCR / SCT, R2_lm = summary(fit_beauty)$r.squared)
 
 Cada pareja de números coincide (salvo redondeo numérico), tal como predice la teoría.
 
-### 2.11.2 Práctica B --- Peso al nacer y tabaquismo materno (`bwght`)
+### Práctica B --- Peso al nacer y tabaquismo materno (`bwght`)
 
 El conjunto de datos `bwght` registra el peso al nacer (en onzas) y el consumo medio diario de cigarrillos de la madre durante el embarazo, entre otras variables, para una muestra de nacimientos en Estados Unidos. El tabaquismo materno es uno de los determinantes del peso al nacer más estudiados, con un mecanismo médico claro a favor de un efecto *negativo*.
 

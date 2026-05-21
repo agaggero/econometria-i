@@ -18,7 +18,7 @@ title: "Conceptos Iniciales"
 
 A lo largo del curso veremos que responder a esta pregunta —y a muchas otras del mismo tipo— exige algo más que una simple correlación entre nivel educativo y salario. Hace falta un **modelo**, una **muestra** y, sobre todo, un **diseño** que nos permita atribuir las diferencias observadas a la causa que nos interesa.
 
-## 1.1 ¿Qué es la Econometría?
+## ¿Qué es la Econometría?
 
 `\lettrine[lines=3]{L}{a}`{=latex} **econometría** es la aplicación de métodos estadísticos a datos económicos con el fin de dar contenido empírico a las relaciones económicas. Su objetivo principal es la **estimación** y **contraste** de relaciones entre variables económicas. Algunos ejemplos típicos:
 
@@ -46,7 +46,7 @@ Cada día, quienes toman decisiones se enfrentan a preguntas cuantitativas:
 La econometría es la caja de herramientas para responder este tipo de preguntas con datos [@wooldridge2020].
 :::
 
-## 1.2 El modelo econométrico
+## El modelo econométrico
 
 El modelo econométrico consta de **dos componentes**:
 
@@ -72,7 +72,7 @@ Dos observaciones importantes:
 - La **forma funcional** (lineal, log-lineal, cuadrática, …) representa una hipótesis sobre la relación entre variables. En cada problema, uno de los retos consiste en elegir una forma funcional compatible con la teoría económica y con los datos.
 - El error $u$ **no es observable**. Cuando estimamos el modelo en una muestra, obtenemos los **residuos** $\hat{u}_i = y_i - \hat{y}_i$, que son la versión muestral —y observable— del error poblacional.
 
-## 1.3 Usos de la econometría
+## Usos de la econometría
 
 El modelo econométrico cumple tres grandes funciones, que conviene distinguir desde el principio:
 
@@ -82,11 +82,11 @@ El modelo econométrico cumple tres grandes funciones, que conviene distinguir d
 
 El tercer punto pertenece a lo que se conoce como la **Revolución de la Credibilidad** en economía empírica, que enfatiza la importancia de identificar efectos causales en lugar de limitarse a constatar correlaciones [@cgl2017]. Las técnicas que veremos en los capítulos siguientes —MCO, controles, variables instrumentales (en cursos posteriores), diferencias-en-diferencias— son herramientas para acercarnos a ese objetivo.
 
-## 1.4 Correlación no implica causalidad
+## Correlación no implica causalidad
 
 Una de las lecciones más importantes de la econometría es que **correlación no implica causalidad**. Que dos variables se muevan juntas no significa que una cause la otra. Veamos por qué.
 
-### 1.4.1 Sesgo de selección
+### Sesgo de selección
 
 :::{.callout-note}
 ## Ejemplo: ventiladores y mortalidad
@@ -104,7 +104,7 @@ La correlación entre uso del respirador y muerte es *positiva*, pero el verdade
 Comparar las medias de $Y$ entre quienes reciben un tratamiento y quienes no lo reciben **no estima el efecto causal** del tratamiento, salvo que la asignación al tratamiento sea independiente de los demás determinantes de $Y$. Esta independencia raramente se da en datos observacionales.
 :::
 
-### 1.4.2 Sesgo de variable omitida
+### Sesgo de variable omitida
 
 :::{.callout-note}
 ## Ejemplo: helados y ahogamientos
@@ -116,7 +116,7 @@ Obviamente no. La **variable omitida** es la temperatura. El calor causa *a la v
 
 Formalmente, hablamos de **sesgo de variable omitida (SVO)** cuando una variable $Z$ que (i) afecta a $Y$ y (ii) está correlacionada con $X$ se deja fuera del modelo. La estimación de $\beta_1$ —el efecto de $X$ sobre $Y$— absorbe parte del efecto de $Z$. Volveremos sobre esto con detalle en el Capítulo 3.
 
-### 1.4.3 Por qué la aleatorización resuelve el problema
+### Por qué la aleatorización resuelve el problema
 
 Si asignamos **aleatoriamente** individuos a un grupo de **tratamiento** y otro de **control**, ambos grupos tendrán, en media, las mismas características —observables y no observables— *antes* del tratamiento. Cualquier diferencia en los resultados *después* del tratamiento puede entonces atribuirse al tratamiento mismo.
 
@@ -132,11 +132,11 @@ Un estudio observa que los estudiantes de escuelas privadas obtienen mejores not
 No: los estudiantes de escuelas privadas suelen proceder de familias con más recursos en el hogar (libros, apoyo, expectativas, redes). Estamos de nuevo ante un sesgo de selección: la «asignación» a la escuela privada no es aleatoria.
 :::
 
-## 1.5 Tipos de experimentos
+## Tipos de experimentos
 
 La forma en que se generan los datos determina hasta qué punto podemos hablar de causalidad. Conviene distinguir tres grandes diseños empíricos.
 
-### 1.5.1 Experimentos aleatorizados
+### Experimentos aleatorizados
 
 Un **experimento aleatorizado** asigna a los participantes a uno o varios grupos mediante un mecanismo aleatorio (un sorteo, una tabla de números aleatorios, etc.). Uno de los grupos recibe la intervención —el **tratamiento**— y otro sirve como **grupo de control** (placebo o práctica habitual). La aleatorización garantiza, en media, la **comparabilidad** entre grupos y permite inferencia causal directa.
 
@@ -147,7 +147,7 @@ Sin embargo, este tipo de experimentos es **poco frecuente** en economía y en c
 
 Existen, no obstante, ejemplos célebres: el experimento RAND de seguro de salud en Estados Unidos, los programas de transferencias condicionadas tipo *PROGRESA/Oportunidades* en México, o las evaluaciones de microcréditos del J-PAL.
 
-### 1.5.2 Cuasi-experimentos
+### Cuasi-experimentos
 
 Con datos **cuasi-experimentales**, la asignación al grupo de tratamiento y al de control **no** es aleatoria, sino que depende de algún criterio **observable** (un umbral administrativo, una regla geográfica, una fecha de corte). Cuando ese criterio es exógeno respecto del resultado de interés, el cuasi-experimento puede aproximarse a un experimento puro.
 
@@ -164,7 +164,7 @@ Comparando municipios «justo por encima» y «justo por debajo» del umbral, es
 
 Otros diseños cuasi-experimentales habituales son **diferencias-en-diferencias**, **regresión discontinua** y **variables instrumentales** (se estudian en cursos posteriores).
 
-### 1.5.3 Datos no experimentales (observacionales)
+### Datos no experimentales (observacionales)
 
 En los datos **no experimentales** —típicamente encuestas— todas las variables se observan simultáneamente y la asignación a «grupos» no obedece a un diseño explícito: cada agente «se selecciona» en función de sus propias circunstancias. Son los datos más abundantes en economía aplicada.
 
@@ -176,7 +176,7 @@ Ejemplos en España:
 
 Con datos observacionales **podemos estimar correlaciones**, pero la interpretación causal exige supuestos adicionales (controlar por confusores observables, instrumentos válidos, diseños cuasi-experimentales, etc.). Esto explica por qué buena parte de la econometría moderna se dedica a **identificar** efectos causales en datos que no proceden de un experimento.
 
-## 1.6 Tipos de datos económicos
+## Tipos de datos económicos
 
 Los datos económicos se presentan en varias formas. Una primera distinción útil es entre el **nivel de agregación** (datos micro frente a datos macro) y la **naturaleza de las variables**:
 
@@ -223,7 +223,7 @@ Conjunto formado por la **unión de varias secciones cruzadas** independientes, 
 No confundir **panel** con **panel agrupado**: la diferencia clave es si las **mismas** unidades se siguen a lo largo del tiempo (panel) o si se extraen **muestras nuevas** en cada período (panel agrupado).
 :::
 
-## 1.7 Práctica: exploración de datos económicos en R
+## Práctica: exploración de datos económicos en R
 
 En esta práctica usaremos el conjunto de datos `wage1` del paquete `wooldridge`, que contiene información de 526 trabajadores estadounidenses en mayo de 1976 (corte transversal). El objetivo es **explorar** los datos antes de cualquier modelización: calcular medias y medianas, visualizar distribuciones y obtener **medias condicionales** que ilustren —pero no demuestren— posibles relaciones.
 

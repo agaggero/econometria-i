@@ -20,7 +20,7 @@ Al terminar este capítulo, el lector debería ser capaz de:
 
 Una regresión lineal del salario sobre la experiencia supone implícitamente que el décimo año de experiencia paga exactamente lo mismo que el primero. El sentido común y décadas de evidencia empírica en economía laboral sugieren lo contrario: el perfil salario-experiencia es *cóncavo*. De manera análoga, un único coeficiente sobre `female` recoge una brecha media en los interceptos pero nada dice acerca de si el *rendimiento* de la experiencia difiere por género. Las herramientas de este capítulo --- cuadráticos, logaritmos, interacciones, ficticias y el test de Chow --- permiten responder preguntas de este tipo sin abandonar MCO.
 
-## 6.1 Relaciones no lineales en un modelo lineal
+## Relaciones no lineales en un modelo lineal
 
 `\lettrine[lines=3]{M}{uchas}`{=latex} relaciones económicas no son líneas rectas. Los rendimientos decrecientes de la experiencia, las curvas de Kuznets en forma de U invertida, las curvas de coste medio en forma de U y las curvas de demanda de elasticidad constante violan todas la linealidad estricta en las variables. Por suerte, el modelo de referencia de este curso solo exige linealidad en los **parámetros**. Una especificación como
 $$
@@ -39,7 +39,7 @@ De aquí se siguen dos lecciones prácticas.
 Un modelo de regresión es *lineal en parámetros* si puede escribirse como $y = \beta_0 + \beta_1 g_1(\mathbf{x}) + \cdots + \beta_k g_k(\mathbf{x}) + \varepsilon$, donde $g_1,\dots,g_k$ son funciones conocidas de los regresores. Las funciones $g_j$ pueden ser muy no lineales (cuadrados, logaritmos, interacciones, ratios), pero cada una entra multiplicada por un único coeficiente desconocido. La estimación por MCO, el teorema de Gauss-Markov y la maquinaria inferencial de los Capítulos 3-5 son todos aplicables.
 :::
 
-## 6.2 Modelos cuadráticos
+## Modelos cuadráticos
 
 La forma más sencilla de captar una relación no lineal consiste en añadir el cuadrado de un regresor:
 $$
@@ -96,7 +96,7 @@ La fórmula $x^* = -\beta_1/(2\beta_2)$ existe siempre, pero el punto de inflexi
 
 En R, el término cuadrático se incluye con `I(exper^2)`. El envoltorio `I()` (de "as is", *tal cual*) protege al operador `^` de ser interpretado por el lenguaje de fórmulas de R como cruce de efectos.
 
-## 6.3 Transformaciones logarítmicas
+## Transformaciones logarítmicas
 
 Tomar el logaritmo natural de uno o de ambos lados de la ecuación de regresión cambia la interpretación del coeficiente. Los cuatro casos de uso habitual se resumen abajo, con $\beta_1$ denotando la pendiente sobre el regresor (posiblemente transformado).
 
@@ -125,7 +125,7 @@ entonces un año adicional de edad se asocia con aproximadamente un $0{,}02 \tim
 El logaritmo natural no está definido en cero ni en números negativos. Antes de logaritmar una variable, comprueba que todas las observaciones son estrictamente positivas. Para variables con muchos ceros (horas trabajadas, donaciones, exportaciones), $\ln$ no es una opción sin más; las alternativas incluyen $\ln(1 + x)$, el seno hiperbólico inverso o un modelo en dos partes. En este capítulo nos ceñimos a variables estrictamente positivas.
 :::
 
-## 6.4 Términos de interacción
+## Términos de interacción
 
 Un **término de interacción** permite que un regresor module el efecto parcial de otro. Con dos regresores continuos $x_1$ y $x_2$,
 $$
@@ -145,7 +145,7 @@ La misma idea se aplica cuando una de las dos variables es una ficticia (Secció
 Un modelo que contiene $x_1 \cdot x_2$ pero omite $x_1$ y/o $x_2$ por separado obliga al efecto parcial del término omitido a pasar por cero. Salvo que exista una razón teórica muy fuerte, *incluye siempre los efectos principales cuando incluyas su interacción.* En R, la sintaxis `x1*x2` se expande automáticamente a `x1 + x2 + x1:x2`, lo que evita este error.
 :::
 
-## 6.5 Variables ficticias
+## Variables ficticias
 
 La información cualitativa --- género, estado civil, región, sector, estación --- entra en una regresión mediante **variables ficticias** (también llamadas *indicadoras* o *binarias*). Una ficticia toma el valor 1 cuando la característica de interés está presente y 0 en caso contrario:
 $$
@@ -160,7 +160,7 @@ En trabajo aplicado son típicos tres tipos de variables cualitativas.
 
 Para una variable ordinal existe una disyuntiva. Puede tratarse como continua e incluir un único coeficiente de pendiente (asumiendo que el efecto de pasar de 2 a 3 es igual al de pasar de 4 a 5), o puede convertirse en un conjunto de ficticias y dejar que los datos decidan si los escalones están equiespaciados. La práctica del §6.8 hace las dos cosas para comparar.
 
-### 6.5.1 La trampa de la ficticia
+### La trampa de la ficticia
 
 Si una variable cualitativa tiene $J$ categorías, en una regresión que contenga intercepto pueden incluirse a lo sumo $J - 1$ ficticias. Incluir las $J$ generaría multicolinealidad perfecta con la constante: las $J$ ficticias suman una columna de unos, que es exactamente la columna del intercepto. MCO no puede entonces identificar los coeficientes individuales --- la matriz $X^{\prime}X$ es singular --- y cualquier software descartará automáticamente una de las ficticias o se negará a calcular. La categoría descartada se llama categoría de **referencia** o **base**, y cada uno de los demás coeficientes de ficticia se interpreta como una *diferencia respecto a ella*.
 
@@ -178,7 +178,7 @@ $$
 La ficticia desplaza la recta de regresión *hacia abajo* en 5 euros para las mujeres, pero deja la *pendiente* sobre la edad inalterada. Hombres y mujeres ganan los mismos 2 euros por año de edad; solo difiere el intercepto.
 :::
 
-### 6.5.2 Ficticias de pendiente (interacciones con una ficticia)
+### Ficticias de pendiente (interacciones con una ficticia)
 
 Para permitir que *tanto* el intercepto *como* la pendiente difieran entre grupos, interactúa la ficticia con un regresor continuo. El modelo
 $$
@@ -200,7 +200,7 @@ $$
 La ficticia de intercepto ($-5$) y la de pendiente ($-1$) capturan dos formas distintas de desigualdad: las mujeres parten más abajo *y* además ganan menos con la edad.
 :::
 
-## 6.6 Test de Chow
+## Test de Chow
 
 Supongamos que sospechamos que la *regresión completa* --- intercepto y todas las pendientes --- difiere entre dos grupos (hombres vs. mujeres, antes vs. después de una reforma, regiones tratadas vs. control). El **test de Chow** es el test $F$ de la hipótesis nula conjunta
 $$
@@ -222,7 +222,7 @@ Algebraicamente, el mismo test puede hacerse agrupando los datos, interactuando 
 El estadístico $F$ de Chow se deriva bajo el supuesto de que la varianza del error es la misma en los dos grupos. Si las dos submuestras presentan varianzas residuales muy diferentes, el test puede ser engañoso. La práctica moderna consiste o bien en usar una versión robusta a heterocedasticidad (por ejemplo, un test de Wald con errores estándar robustos sobre la regresión interactuada) o bien en tomar logaritmos de la variable dependiente; ambas opciones se retoman en el Capítulo 7.
 :::
 
-## 6.7 Práctica A: formas no lineales en `beauty` (Tutorial 6)
+## Práctica A: formas no lineales en `beauty` (Tutorial 6)
 
 El dataset `beauty` del paquete **wooldridge** contiene salarios por hora, años de educación y de experiencia, una puntuación ordinal de apariencia (`looks`) de 1 a 5, y ficticias de género y estado civil. Lo usamos para ajustar una base lineal, añadir un término cuadrático en experiencia, tomar logaritmo del salario y, por último, introducir una interacción entre apariencia y educación.
 
@@ -317,7 +317,7 @@ sapply(c(12, 16), me)
 
 Un sencillo test $t$ sobre el coeficiente de la interacción (la fila `apariencia:educ` del resumen) indica si la prima varía genuinamente con la educación o si es estadísticamente indistinguible de una constante.
 
-## 6.8 Práctica B: ficticias y test de Chow (Tutorial 7)
+## Práctica B: ficticias y test de Chow (Tutorial 7)
 
 Esta práctica retoma la pregunta de género que abría el capítulo. Usamos los mismos datos `beauty`, construimos ficticias categóricas a partir de la apariencia ordinal y cerramos con un test de Chow manual.
 

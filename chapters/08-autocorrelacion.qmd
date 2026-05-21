@@ -20,7 +20,7 @@ Al finalizar este capítulo el lector debería ser capaz de:
 
 Imaginemos a un analista de marketing que regresa las ventas trimestrales sobre el gasto en publicidad y una tendencia temporal, obtiene un estadístico $t$ de $7{,}4$ sobre el coeficiente de publicidad y reporta con orgullo un efecto "altamente significativo". El consejo de administración aprueba un aumento del presupuesto del 30 % y, al año siguiente, las ventas decepcionan. ¿Qué ha fallado? Muy a menudo, la respuesta es **autocorrelación**: los errores en el trimestre $t$ están correlacionados con los errores en $t-1$, los errores estándar de MCO son demasiado pequeños y el estadístico $t$ está inflado. Este capítulo trata precisamente de cómo diagnosticar y corregir ese problema.
 
-## 8.1 Contexto: del corte transversal a la serie temporal
+## Contexto: del corte transversal a la serie temporal
 
 `\lettrine[lines=3]{E}{n}`{=latex} los capítulos 1-7 cada observación era un **individuo** (un trabajador, una empresa, un hogar, una provincia) muestreado en un único momento del tiempo. Indexábamos las observaciones por $i = 1,\dots,n$. Las series temporales son distintas: hay una sola unidad —un país, una empresa, un mercado— observada repetidamente a lo largo de períodos discretos. Sustituimos el índice $i$ por $t = 1,\dots,n$ y el modelo poblacional se convierte en
 
@@ -51,9 +51,9 @@ En una serie temporal no hay muestreo aleatorio entre unidades. Los errores suce
 
 El contraste con el capítulo 7 es útil. La **heterocedasticidad** es una patología transversal en la que $\operatorname{Var}(u_i)$ depende de los regresores, pero los errores entre unidades son independientes. La **autocorrelación** es su prima temporal: los elementos *fuera de la diagonal* de la matriz de varianzas-covarianzas del error son no nulos, mientras que la diagonal puede o no permanecer constante. Ambas dejan a MCO insesgado, pero invalidan sus errores estándar.
 
-## 8.2 Definición, estructura AR(1) y consecuencias
+## Definición, estructura AR(1) y consecuencias
 
-### 8.2.1 Definición
+### Definición
 
 ::: {.callout-note}
 ## Definición (autocorrelación)
@@ -82,7 +82,7 @@ con al menos un elemento fuera de la diagonal $\gamma_k = \operatorname{Cov}(u_t
 
 Bajo los supuestos clásicos del modelo de regresión lineal con datos transversales, los elementos fuera de la diagonal son todos nulos y $\operatorname{Var}(\mathbf{u}) = \sigma^2 \mathbf{I}_n$. La autocorrelación rompe esa simplificación.
 
-### 8.2.2 El modelo AR(1): el caballo de batalla
+### El modelo AR(1): el caballo de batalla
 
 A lo largo de todo el capítulo —y de la inmensa mayoría del trabajo aplicado de grado— utilizaremos un modelo concreto para la dependencia serial: el proceso **autorregresivo de primer orden** o **AR(1)**:
 
@@ -108,7 +108,7 @@ De modo que $\gamma_k = \rho^k \sigma^2$ con $\sigma^2 = \sigma_\varepsilon^2/(1
 
 Los procesos de orden superior (AR(2), AR($p$), ARMA, …) existen y se estudian en Econometría II; para nuestros propósitos el AR(1) basta para fijar las ideas y motivar los diagnósticos y correcciones que siguen.
 
-### 8.2.3 Consecuencias para MCO
+### Consecuencias para MCO
 
 ¿Qué efecto tiene la autocorrelación sobre el estimador MCO $\hat{\beta}$?
 
@@ -130,11 +130,11 @@ entonces $y_{t-1}$ depende de $u_{t-1}$, y $u_{t-1}$ está correlacionado con $u
 
 La intuición de por qué la autocorrelación positiva hace que los errores estándar de MCO sean demasiado pequeños merece reflexión: si los errores sucesivos contienen información sobre los siguientes, $n$ observaciones correlacionadas aportan *menos información independiente* que $n$ observaciones incorreladas. El **tamaño muestral efectivo** es menor que el nominal $n$, pero la fórmula de MCO trata cada observación como si fuese una extracción fresca. La precisión reportada está, por tanto, exagerada.
 
-## 8.3 Detección
+## Detección
 
 Disponemos de dos cajas de herramientas complementarias: **gráfica** (rápida e intuitiva) y **analítica** (contrastes formales). El flujo de trabajo recomendado es mirar primero y contrastar después.
 
-### 8.3.1 Métodos gráficos
+### Métodos gráficos
 
 **Gráfico temporal de los residuos.** Representamos $\hat u_t$ frente a $t$. Si los errores están incorrelados, los residuos deberían dispersarse aleatoriamente alrededor de cero —sin patrón visible, sin agrupamientos, sin ciclos manifiestos—. Si observamos **rachas largas** de residuos del mismo signo (muchos positivos consecutivos, luego muchos negativos), esa es la firma visual de $\rho>0$. Si los residuos alternan en un patrón de diente de sierra, indica $\rho<0$.
 
@@ -142,7 +142,7 @@ Disponemos de dos cajas de herramientas complementarias: **gráfica** (rápida e
 
 Las tres formas de referencia son: una nube sin estructura ($\rho\approx 0$), una recta de pendiente positiva ($\rho>0$) y una recta de pendiente negativa ($\rho<0$). En la práctica del §8.5 veremos las tres.
 
-### 8.3.2 El contraste de Durbin-Watson
+### El contraste de Durbin-Watson
 
 El estadístico de **Durbin-Watson (DW)** es el contraste formal por excelencia para la autocorrelación de primer orden.
 
@@ -225,7 +225,7 @@ $$DW = \frac{18{,}7960}{22{,}8435} \approx 0{,}823.$$
 Para $n=10$ y $k=1$, las cotas al 5 % son $d_L=0{,}879$ y $d_U=1{,}320$. Como $DW < d_L$, **se rechaza** $H_0$ y se concluye que existe autocorrelación positiva. Usaremos este mismo ejemplo en §8.4 para ilustrar Cochrane-Orcutt.
 :::
 
-### 8.3.3 Cuando DW falla: el h-test de Durbin
+### Cuando DW falla: el h-test de Durbin
 
 El contraste de DW descansa sobre dos hipótesis que a menudo quedan implícitas: el proceso del error es AR(1) y la regresión **no** incluye un retardo de la variable dependiente. El caso del retardo —discutido en el recuadro de advertencia del §8.2.3— es precisamente aquel en el que MCO se vuelve inconsistente, y en el que DW pasa a estar fuertemente sesgado hacia 2 (hacia la hipótesis nula de no autocorrelación), que es el peor comportamiento posible para un contraste diagnóstico.
 
@@ -259,11 +259,11 @@ Al 5 % el valor crítico es $z_{0{,}975}=1{,}96$. Como $|h|=1{,}91 < 1{,}96$, **
 
 Existen otros contrastes —la prueba LM de **Breusch-Godfrey**, válida para órdenes superiores; la prueba portmanteau de **Ljung-Box**— que se cubren en Econometría II. Para esta asignatura, DW (o el $h$ de Durbin cuando proceda) es la herramienta estándar.
 
-## 8.4 Corrección: de MCG a Cochrane-Orcutt
+## Corrección: de MCG a Cochrane-Orcutt
 
 Si MCO es ineficiente bajo AR(1), ¿qué debemos hacer? La respuesta es **Mínimos Cuadrados Generalizados (MCG)**: transformar el modelo de modo que los errores transformados sean ruido blanco, y entonces aplicar MCO al modelo transformado.
 
-### 8.4.1 La cuasi-diferenciación de MCG
+### La cuasi-diferenciación de MCG
 
 Partimos del modelo y de su retardo multiplicado por $\rho$:
 
@@ -323,7 +323,7 @@ $$
 
 Aplicando MCO a $(\mathbf{Y}^*, \mathbf{X}^*)$ se obtiene $\hat{\beta}_{\text{MCG}}$.
 
-### 8.4.2 El procedimiento iterativo de Cochrane-Orcutt
+### El procedimiento iterativo de Cochrane-Orcutt
 
 La pega: $\rho$ es desconocido. Hay que estimarlo. El procedimiento de **Cochrane-Orcutt (CO)** es el algoritmo de MCG factibles más sencillo: alternar entre estimar $\rho$ a partir de los residuos y reestimar $\beta$ sobre los datos cuasi-diferenciados, hasta que $\rho$ se estabilice.
 
@@ -382,7 +382,7 @@ La pendiente apenas se mueve —MCO era insesgado desde el principio—, pero el
 
 La moraleja: en el mundo AR(1), MCO entrega las estimaciones *puntuales* correctas (en promedio), pero con una *incertidumbre* equivocada; Cochrane-Orcutt arregla la incertidumbre sin alterar apenas el punto.
 
-## 8.5 Práctica: Autocorrelación en R
+## Práctica: Autocorrelación en R
 
 La práctica sigue el flujo del Tutorial 9 (`autocorr_datos.xlsx`): regresamos ventas trimestrales sobre publicidad y una tendencia temporal, diagnosticamos autocorrelación visual y formalmente con Durbin-Watson, y corregimos con Cochrane-Orcutt. Para que el capítulo sea autocontenido y reproducible sin necesidad del fichero `.xlsx` externo, generamos una versión sintética del tutorial con la misma estructura (ventas dependientes de publicidad más una tendencia, errores AR(1) con $\rho$ conocido). El tutorial interactivo `LEARNR/08_autocorrelation.Rmd` utiliza la misma simulación.
 
@@ -407,7 +407,7 @@ head(autocorr_demo)
 
 El proceso generador de datos tiene pendiente `0.8` sobre publicidad, coeficiente de tendencia `0.3` y errores AR(1) con $\rho = 0{,}7$ (autocorrelación positiva fuerte). Un analista real no conocería ninguno de estos valores.
 
-### 8.5.1 MCO y primer vistazo a los residuos
+### MCO y primer vistazo a los residuos
 
 ```{r ch08-ols}
 fit <- lm(ventas ~ publicidad + tiempo, data = autocorr_demo)
@@ -426,7 +426,7 @@ abline(h = 0, lty = 2)
 
 Los residuos trazan excursiones largas y suaves por encima y por debajo de cero: la imagen exacta de $\rho>0$. La comparación con una serie de residuos incorrelados (una nube sin estructura alrededor de cero) hace evidente la diferencia.
 
-### 8.5.2 Gráfico de retardos
+### Gráfico de retardos
 
 ```{r ch08-lag-plot}
 #| fig-cap: "Gráfico de retardos de los residuos MCO: $\\hat u_t$ frente a $\\hat u_{t-1}$. La inclinación positiva confirma autocorrelación positiva de primer orden."
@@ -451,7 +451,7 @@ rho_hat
 
 La autocorrelación residual $\hat\rho$ debería estar cerca del verdadero $0{,}7$, y $2(1-\hat\rho)$ aporta una aproximación rápida al valor que devolverá el contraste de Durbin-Watson.
 
-### 8.5.3 Durbin-Watson
+### Durbin-Watson
 
 ```{r ch08-dw}
 dwtest(fit)
@@ -459,7 +459,7 @@ dwtest(fit)
 
 El estadístico $DW$ queda bien por debajo de 2, el $p$-valor es minúsculo y rechazamos $H_0: \rho = 0$ a favor de autocorrelación positiva. Compárese $DW$ con $2(1-\hat\rho)$ del chunk anterior: deben coincidir salvo redondeo.
 
-### 8.5.4 Corrección de Cochrane-Orcutt
+### Corrección de Cochrane-Orcutt
 
 ```{r ch08-co}
 co <- cochrane.orcutt(fit)
@@ -484,7 +484,7 @@ Hay tres observaciones típicas de esta corrección:
 2. Los **errores estándar** en la salida de CO son mayores que los de MCO. Los $t$ de MCO estaban inflados; los corregidos son más honestos. Hipótesis "altamente significativas" pueden quedar meramente significativas, o incluso dejar de rechazar.
 3. El $DW$ sobre los residuos transformados está cerca de 2, indicando que la corrección AR(1) ha cumplido su función. Si el nuevo $DW$ siguiera lejos de 2, los residuos podrían seguir un proceso más rico (AR(2), p. ej.), fuera del alcance del capítulo.
 
-### 8.5.5 Una Cochrane-Orcutt manual en un paso
+### Una Cochrane-Orcutt manual en un paso
 
 Para ver exactamente qué hace `cochrane.orcutt()` por dentro, replicamos el algoritmo manualmente en una sola iteración:
 

@@ -20,7 +20,7 @@ Al terminar este capítulo, el lector debería ser capaz de:
 
 La respuesta depende de una distinción fácil de pasar por alto: el primer selector está reportando incertidumbre sobre el salario *medio* de las personas como este candidato, mientras que el segundo está reportando incertidumbre sobre el salario real *de este* candidato. El mismo modelo ajustado produce ambos números —responden a preguntas distintas—. Este capítulo trata sobre esa distinción y sobre la cuestión asociada de cómo elegir entre modelos competidores en primer lugar.
 
-## 5.1 Causalidad vs. predicción
+## Causalidad vs. predicción
 
 `\lettrine[lines=3]{H}{asta}`{=latex} el Capítulo 4 hemos usado la regresión con un único propósito: estimar el efecto *ceteris paribus* de $x$ sobre $y$. El coeficiente $\beta_j$ era el objeto de interés, y todo el aparato de los supuestos de Gauss--Markov, los tests $t$ y los tests $F$ estaba al servicio de obtener $\hat\beta_j$ correctamente —insesgado, eficiente y con errores estándar válidos—.
 
@@ -39,7 +39,7 @@ Un modelo puede ser excelente para un propósito y pobre para el otro. Un predic
 Un $R^2$ alto indica que los valores ajustados siguen bien a $y$. **No** dice que ningún coeficiente individual mida un efecto causal. La estrategia de identificación —asignación aleatoria, un instrumento, un experimento natural o un argumento creíble de que $\mathbb{E}[u \mid x] = 0$— es lo que autoriza la interpretación causal. Los criterios de selección basados en el ajuste, como el $R^2$ ajustado, el AIC y el BIC, son herramientas para la predicción; no pueden rescatar un modelo aquejado de sesgo por variable omitida.
 :::
 
-## 5.2 Predicción puntual
+## Predicción puntual
 
 Por claridad, consideremos primero el modelo de regresión lineal simple (RLS):
 
@@ -79,11 +79,11 @@ Por tanto, $\hat y_0$ es un **predictor insesgado** de $y_0$. De hecho, bajo RLS
 El mismo número $\hat y_0$ es *tanto* la predicción puntual del valor individual $y_0$ *como* la estimación de la media condicional $\mathbb{E}[y \mid x_0]$. Las dos interpretaciones de $\hat y_0$ son numéricamente idénticas, pero tienen una *incertidumbre* distinta. La sección siguiente lo concreta.
 :::
 
-## 5.3 Varianza de la predicción e intervalos de predicción
+## Varianza de la predicción e intervalos de predicción
 
 Una estimación puntual rara vez es suficiente. Necesitamos un intervalo que cuantifique la incertidumbre —y hay dos incertidumbres distintas que cuantificar—.
 
-### 5.3.1 Intervalo de confianza para la media condicional $\mathbb{E}[y \mid x_0]$
+### Intervalo de confianza para la media condicional $\mathbb{E}[y \mid x_0]$
 
 La media condicional $\mathbb{E}[y \mid x_0] = \beta_0 + \beta_1 x_0$ es una cantidad poblacional fija (no aleatoria). Su estimador es $\hat y_0 = \hat\beta_0 + \hat\beta_1 x_0$, que es aleatorio porque las estimaciones MCO son aleatorias. Su varianza es
 
@@ -99,7 +99,7 @@ $$
 
 con $t_c$ el valor crítico apropiado de una distribución $t$ con $n - k - 1$ grados de libertad.
 
-### 5.3.2 Intervalo de predicción para un valor individual $y_0$
+### Intervalo de predicción para un valor individual $y_0$
 
 El nuevo resultado $y_0 = \beta_0 + \beta_1 x_0 + u_0$ es aleatorio porque *tanto* las estimaciones MCO *como* el nuevo error $u_0$ son aleatorios. Suponiendo que $u_0$ es independiente de la muestra,
 
@@ -132,7 +132,7 @@ Algunas observaciones adicionales sobre las fórmulas:
 - Ambas varianzas crecen cuando $x_0$ se aleja de la media muestral $\bar x$. Las predicciones son más precisas en el centro de los datos; predecir en los extremos (o extrapolar fuera de ellos) es peligroso.
 - Ambas varianzas se reducen cuando $\mathrm{SCT}_x$ crece. Regresores más dispersos proporcionan más palanca para fijar la pendiente, lo que a su vez reduce la varianza de la predicción.
 
-### 5.3.3 Ejemplo numérico
+### Ejemplo numérico
 
 Supongamos que hemos estimado la RLS
 
@@ -162,7 +162,7 @@ $$
 
 El IC tiene una anchura de unos $\pm 1{,}20$ en torno a la predicción puntual; el IP, de unos $\pm 4{,}14$. La proporción la fija el tamaño relativo del «$1$» frente a $1/n + (x_0 - \bar x)^2/\mathrm{SCT}_x = 0{,}09$. Aquí la incertidumbre por la nueva extracción supera en un orden de magnitud a la incertidumbre por los parámetros.
 
-## 5.4 Predicción en RLM
+## Predicción en RLM
 
 Los modelos salariales reales incluyen más de un regresor. Nada esencial cambia en la construcción de $\hat y_0$ y los dos intervalos —las fórmulas pasan a ser versiones vector-matriz de las de la RLS—.
 
@@ -180,11 +180,11 @@ Eliminar el «$1$» proporciona la varianza de $\hat y_0$ como estimador de $\ma
 Las fórmulas de predicción asumen que $(y_0, x_0)$ proviene de la *misma población* que la muestra. Si $x_0$ está muy fuera del rango de los regresores realmente observados —pongamos, predecir el salario de alguien con 30 años de educación y 80 años de experiencia—, ambos intervalos pueden calcularse técnicamente, pero ninguno es fiable. No hay información en la muestra sobre lo que ocurre en esos valores. Mantente dentro del soporte de los datos.
 :::
 
-## 5.5 Selección de modelos: $R^2$, $R^2$ ajustado, AIC, BIC
+## Selección de modelos: $R^2$, $R^2$ ajustado, AIC, BIC
 
 Supongamos que tenemos varios modelos de regresión candidatos para el mismo resultado. ¿Cómo elegimos? Cuatro criterios se utilizan habitualmente.
 
-### 5.5.1 $R^2$ y el problema de las variables «basura»
+### $R^2$ y el problema de las variables «basura»
 
 El coeficiente de determinación
 
@@ -196,7 +196,7 @@ mide la proporción de la variación de $y$ explicada por el modelo. Como mecani
 
 Si eligiéramos el modelo maximizando $R^2$, incluiríamos todos los regresores a nuestro alcance —incluyendo decenas de irrelevantes—. El modelo ajustaría la muestra de maravilla y predeciría pésimamente fuera de muestra. Este es el clásico problema del *sobreajuste*. Las transparencias lo ilustran simulando un modelo con dos regresores genuinos $X_1, X_2$ y añadiendo después 196 variables «basura» de puro ruido: el $R^2$ asciende sostenidamente hacia 1 a medida que se acumula la basura, aunque ninguna de las nuevas variables tenga contenido predictivo.
 
-### 5.5.2 $R^2$ ajustado
+### $R^2$ ajustado
 
 Una solución simple es penalizar la complejidad. El **$R^2$ ajustado** es
 
@@ -212,7 +212,7 @@ Algunos hechos útiles:
 - A diferencia de $R^2$, $\bar R^2$ *puede disminuir* al añadir un regresor irrelevante —y en la simulación de basura, lo hace—.
 - $\bar R^2$ puede en principio ser negativo si el modelo es tan malo que $\hat\sigma^2$ supera la varianza muestral de $y$.
 
-### 5.5.3 AIC y BIC
+### AIC y BIC
 
 El **criterio de información de Akaike** y el **criterio de información Bayesiano** combinan el ajuste del modelo (una log-verosimilitud) con una penalización por complejidad:
 
@@ -234,11 +234,11 @@ $$
 Si dos modelos usan distintas variables dependientes (por ejemplo, `wage` y `log(wage)`), o se estiman en submuestras distintas, sus AIC y BIC *no* son comparables —las log-verosimilitudes están en escalas diferentes—. La misma advertencia se aplica a $R^2$ y $\bar R^2$.
 :::
 
-### 5.5.4 Test $F$ anidado
+### Test $F$ anidado
 
 Cuando un modelo está anidado dentro de otro —el modelo más pequeño se obtiene fijando a cero algunos coeficientes del modelo mayor—, el **test $F$ de restricciones conjuntas** (Capítulo 4) es el test formal de «¿son estos regresores adicionales conjuntamente informativos?». En R, `anova(pequeño, grande)` lo realiza. El test responde a una pregunta distinta de AIC/BIC: pregunta si los datos *rechazan* el modelo pequeño en favor del grande, no qué modelo es el «mejor» según algún criterio predictivo.
 
-### 5.5.5 Juntándolo todo
+### Juntándolo todo
 
 En la práctica reportamos los cuatro criterios uno al lado del otro. Suelen coincidir en la ordenación general; cuando discrepan, la discrepancia es informativa:
 
@@ -247,7 +247,7 @@ En la práctica reportamos los cuatro criterios uno al lado del otro. Suelen coi
 
 Y, siempre: los criterios de selección de modelos eligen el modelo que *mejor ajusta* según el criterio dado. No eligen el modelo que mejor *identifica un parámetro causal*. Esa elección pertenece a la estrategia de identificación.
 
-## 5.6 Práctica: Predicción y Selección de Modelos en R
+## Práctica: Predicción y Selección de Modelos en R
 
 Trabajamos con el conjunto de datos `wage1`, que contiene 526 trabajadores estadounidenses (Capítulo 1). El objetivo es (i) ajustar una secuencia de modelos salariales anidados, (ii) compararlos mediante $\bar R^2$, AIC, BIC y un test $F$, (iii) producir predicciones puntuales y los dos intervalos para un trabajador concreto, y (iv) visualizar la diferencia entre la banda de confianza para la media y la banda de predicción para un individuo.
 

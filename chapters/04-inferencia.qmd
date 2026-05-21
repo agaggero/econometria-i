@@ -20,7 +20,7 @@ Al terminar este capítulo, el lector debería ser capaz de:
 
 Vimos `IQ` brevemente en el Capítulo 3 como candidato a *proxy* de la habilidad no observada. Ahora debemos decidir, formalmente, si los coeficientes que estimamos están lo bastante alejados de cero como para tomarlos en serio. Las herramientas del capítulo --- estadísticos $t$, $p$-valores, intervalos de confianza y test $F$ --- están diseñadas precisamente para esa decisión.
 
-## 4.1 De la estimación a la inferencia
+## De la estimación a la inferencia
 
 `\lettrine[lines=3]{L}{os}`{=latex} Capítulos 2 y 3 produjeron **estimaciones puntuales** $\hat{\beta}_j$ a partir de una muestra. Estos números son aleatorios: una muestra distinta habría dado números distintos. La cuestión de la inferencia es si lo que aprendimos de *nuestra* muestra nos permite decir algo creíble sobre el parámetro poblacional desconocido $\beta_j$.
 
@@ -31,7 +31,7 @@ La inferencia estadística proporciona dos herramientas complementarias [@wooldr
 
 Ambas herramientas dependen de conocer la *distribución muestral* de $\hat{\beta}_j$. Bajo Gauss--Markov solo conocemos su media ($\beta_j$) y su varianza; no conocemos su forma. Para decir algo preciso sobre probabilidades --- "la probabilidad de observar un coeficiente tan alejado de cero, si la verdad es cero, es inferior al 1%" --- necesitamos una distribución. Eso es lo que aporta el siguiente supuesto.
 
-## 4.2 Los supuestos del Modelo Lineal Clásico (MLC)
+## Los supuestos del Modelo Lineal Clásico (MLC)
 
 Gauss--Markov nos dio insesgadez, una varianza con forma cerrada y la propiedad BLUE (ELIO) de MCO. Para inferencia exacta (en muestras finitas) necesitamos un supuesto adicional.
 
@@ -63,7 +63,7 @@ Esta es una afirmación *exacta* que se cumple para cualquier tamaño muestral, 
 RLM.6 es una afirmación sobre el *error* $u$, condicional a los regresores. **No** es la afirmación de que la distribución marginal de $y$ sea normal. Los salarios, por ejemplo, son asimétricos a la derecha; eso no contradice por sí mismo RLM.6, porque la componente sistemática $\beta_0 + \beta_1 x_1 + \cdots$ puede absorber la asimetría.
 :::
 
-## 4.3 La distribución $t$
+## La distribución $t$
 
 Si $\sigma^2$ fuera conocida podríamos estandarizar $\hat{\beta}_j$ directamente:
 
@@ -81,7 +81,7 @@ La distribución $t$ es simétrica, acampanada y centrada en cero, pero tiene **
 
 Esa es toda la razón por la que este capítulo usa valores críticos $t$ como $2{,}013$ (para $\alpha = 0{,}05$, $df = 45$) en lugar del familiar $1{,}96$ de la tabla normal.
 
-## 4.4 Intervalos de confianza
+## Intervalos de confianza
 
 ::: {.callout-note}
 ## Definición: intervalo de confianza para $\beta_j$
@@ -105,7 +105,7 @@ Un intervalo de confianza del 95% es una afirmación sobre el **procedimiento**,
 
 Los intervalos de confianza y los contrastes de hipótesis bilaterales son dos caras de la misma moneda: un IC del $(1-\alpha)$ para $\beta_j$ contiene cero **si y solo si** el test $t$ bilateral de $H_0:\beta_j = 0$ al nivel $\alpha$ no rechaza.
 
-## 4.5 Contraste de hipótesis en cuatro pasos
+## Contraste de hipótesis en cuatro pasos
 
 Contrastamos afirmaciones sobre un único coeficiente $\beta_j$ usando un procedimiento estándar en cuatro pasos. Sea $c$ el valor hipotetizado (habitualmente $c = 0$, "la variable no importa").
 
@@ -144,7 +144,7 @@ Si rechazamos $H_0$ decimos que el coeficiente es *estadísticamente significati
 Un coeficiente puede ser estadísticamente significativo ($p$-valor pequeño) pero económicamente diminuto, y un coeficiente puede ser económicamente grande pero estadísticamente no significativo en una muestra pequeña. Informe siempre de los dos aspectos: la *magnitud* de $\hat{\beta}_j$ en las unidades del problema y la precisión con la que se estima. Una rentabilidad del 1% por un año adicional de educación y otra del 10% son ambas "significativamente distintas de cero" en una muestra grande, pero solo una de ellas es relevante para la política pública.
 :::
 
-## 4.6 El $p$-valor
+## El $p$-valor
 
 El procedimiento de los cuatro pasos nos obliga a fijar $\alpha$ por adelantado. Una alternativa más informativa es presentar el $p$-valor.
 
@@ -177,7 +177,7 @@ R muestra $p$-valores bilaterales por defecto en la columna `Pr(>|t|)` de `summa
 La significatividad estadística nos dice que es improbable que $\hat{\beta}_j$ haya surgido por ruido muestral si la verdad fuese cero. **No** dice nada sobre si $x_j$ *causa* $y$. La interpretación causal sigue exigiendo el supuesto poblacional $\mathbb{E}[u \mid \mathbf{X}] = 0$ (RLM.4) --- ningún $p$-valor, por pequeño que sea, puede salvar una regresión contaminada por sesgo de variable omitida o por causalidad inversa.
 :::
 
-## 4.7 El test $F$ de significatividad conjunta
+## El test $F$ de significatividad conjunta
 
 Los tests $t$ sobre un único coeficiente son la herramienta adecuada cuando tenemos un parámetro en mente. Sin embargo, a menudo la pregunta es si **varios** coeficientes son conjuntamente cero:
 
@@ -187,7 +187,7 @@ Los tests $t$ sobre un único coeficiente son la herramienta adecuada cuando ten
 
 Estas son hipótesis conjuntas, y requieren un contraste conjunto. Hacer $q$ tests $t$ separados **no** responde a la pregunta conjunta, porque el tamaño del procedimiento combinado deja de ser $\alpha$, y porque dos coeficientes pueden ser conjuntamente informativos aun cuando cada uno sea individualmente marginal.
 
-### 4.7.1 Modelos restringido y no restringido
+### Modelos restringido y no restringido
 
 Sea el modelo **no restringido** la regresión con $k$ pendientes,
 
@@ -229,7 +229,7 @@ $$
 
 Ambas fórmulas son algebraicamente idénticas siempre que $y$ sea la misma en ambas regresiones; difieren solo cuando el modelo restringido tiene una variable dependiente distinta (por ejemplo, un contraste $F$ de $\log y$ frente a $y$, que la fórmula anterior **no** cubre).
 
-### 4.7.2 El test $F$ global
+### El test $F$ global
 
 Un caso particular es el contraste de que **todas** las pendientes son cero,
 
@@ -245,7 +245,7 @@ $$
 
 que es exactamente el número que R imprime en la línea final de `summary(lm(...))` bajo "F-statistic", junto con su $p$-valor.
 
-### 4.7.3 $F$ frente a $t$: una identidad útil
+### $F$ frente a $t$: una identidad útil
 
 Para una *única* restricción ($q = 1$), el estadístico $F$ es igual al cuadrado del estadístico $t$ correspondiente:
 
@@ -255,7 +255,7 @@ $$
 
 Los contrastes $t$ y $F$ ofrecen conclusiones idénticas en este caso; la maquinaria $F$ solo resulta estrictamente necesaria cuando $q \geq 2$.
 
-## 4.8 Práctica: Inferencia en R
+## Práctica: Inferencia en R
 
 Trabajamos con `wage2` del paquete **wooldridge**: una sección cruzada de $n = 935$ hombres estadounidenses procedentes del *National Longitudinal Survey* de 1980, con información sobre salario mensual (`wage`), horas semanales (`hours`), una puntuación en un test de cociente intelectual (`IQ`), años de escolarización (`educ`), años de experiencia laboral (`exper`), antigüedad en el empleo actual (`tenure`) y edad. El objetivo es trasladar la maquinaria inferencial de los cuatro pasos a órdenes de R y luego comprobar que los atajos integrados dan las mismas respuestas.
 
