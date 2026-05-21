@@ -22,7 +22,7 @@ La respuesta depende de una distinción fácil de pasar por alto: el primer sele
 
 ## 5.1 Causalidad vs. predicción
 
-Hasta el Capítulo 4 hemos usado la regresión con un único propósito: estimar el efecto *ceteris paribus* de $x$ sobre $y$. El coeficiente $\beta_j$ era el objeto de interés, y todo el aparato de los supuestos de Gauss--Markov, los tests $t$ y los tests $F$ estaba al servicio de obtener $\hat\beta_j$ correctamente —insesgado, eficiente y con errores estándar válidos—.
+`\lettrine[lines=3]{H}{asta}`{=latex} el Capítulo 4 hemos usado la regresión con un único propósito: estimar el efecto *ceteris paribus* de $x$ sobre $y$. El coeficiente $\beta_j$ era el objeto de interés, y todo el aparato de los supuestos de Gauss--Markov, los tests $t$ y los tests $F$ estaba al servicio de obtener $\hat\beta_j$ correctamente —insesgado, eficiente y con errores estándar válidos—.
 
 La econometría también tiene un segundo uso, igualmente legítimo: la **predicción**. Aquí no nos interesa particularmente el valor de ningún $\beta_j$ individual; nos importa la precisión del valor ajustado $\hat y_0$ para una nueva observación.
 

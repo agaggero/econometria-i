@@ -20,7 +20,7 @@ A lo largo del curso veremos que responder a esta pregunta —y a muchas otras d
 
 ## 1.1 ¿Qué es la Econometría?
 
-La **econometría** es la aplicación de métodos estadísticos a datos económicos con el fin de dar contenido empírico a las relaciones económicas. Su objetivo principal es la **estimación** y **contraste** de relaciones entre variables económicas. Algunos ejemplos típicos:
+`\lettrine[lines=3]{L}{a}`{=latex} **econometría** es la aplicación de métodos estadísticos a datos económicos con el fin de dar contenido empírico a las relaciones económicas. Su objetivo principal es la **estimación** y **contraste** de relaciones entre variables económicas. Algunos ejemplos típicos:
 
 - Educación $\Rightarrow$ Salario
 - Asistencia a clase $\Rightarrow$ Nota final

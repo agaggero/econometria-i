@@ -23,7 +23,7 @@ La literatura de economía laboral [@wooldridge2020] documenta desde hace décad
 
 ## 2.1 Introducción
 
-El análisis de regresión investiga la relación entre dos o más variables. En este capítulo nos centramos en el modelo de **Regresión Lineal Simple** (RLS), que relaciona una variable dependiente $y$ con una única variable independiente $x$:
+`\lettrine[lines=3]{E}{l}`{=latex} análisis de regresión investiga la relación entre dos o más variables. En este capítulo nos centramos en el modelo de **Regresión Lineal Simple** (RLS), que relaciona una variable dependiente $y$ con una única variable independiente $x$:
 
 $$
 y = \beta_0 + \beta_1 x + u.

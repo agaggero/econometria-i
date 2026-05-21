@@ -22,7 +22,7 @@ Una regresión del salario por hora sobre los años de educación entrega una es
 
 ## 7.1 Introducción
 
-En el Capítulo 4 enumeramos los supuestos RLM.1--RLM.6 del modelo de regresión lineal múltiple que justifican MCO. El supuesto de **homocedasticidad** RLM.5 establece que la varianza del error es la misma para cualquier valor de los regresores:
+`\lettrine[lines=3]{E}{n}`{=latex} el Capítulo 4 enumeramos los supuestos RLM.1--RLM.6 del modelo de regresión lineal múltiple que justifican MCO. El supuesto de **homocedasticidad** RLM.5 establece que la varianza del error es la misma para cualquier valor de los regresores:
 
 $$
 \operatorname{Var}(u_i \mid \mathbf{x}_i) \;=\; \sigma^2, \qquad i = 1, \dots, n.

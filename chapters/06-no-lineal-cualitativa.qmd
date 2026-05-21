@@ -22,7 +22,7 @@ Una regresión lineal del salario sobre la experiencia supone implícitamente qu
 
 ## 6.1 Relaciones no lineales en un modelo lineal
 
-Muchas relaciones económicas no son líneas rectas. Los rendimientos decrecientes de la experiencia, las curvas de Kuznets en forma de U invertida, las curvas de coste medio en forma de U y las curvas de demanda de elasticidad constante violan todas la linealidad estricta en las variables. Por suerte, el modelo de referencia de este curso solo exige linealidad en los **parámetros**. Una especificación como
+`\lettrine[lines=3]{M}{uchas}`{=latex} relaciones económicas no son líneas rectas. Los rendimientos decrecientes de la experiencia, las curvas de Kuznets en forma de U invertida, las curvas de coste medio en forma de U y las curvas de demanda de elasticidad constante violan todas la linealidad estricta en las variables. Por suerte, el modelo de referencia de este curso solo exige linealidad en los **parámetros**. Una especificación como
 $$
 y = \beta_0 + \beta_1 x + \beta_2 x^2 + \varepsilon
 $$

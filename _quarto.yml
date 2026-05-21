@@ -58,31 +58,39 @@ format:
         \usepackage{booktabs}
         \usepackage{amsmath,amssymb,amsthm,mathtools}
         \usepackage{bm}
+        \usepackage{lettrine}
 
-        % --- Portada estilo tesis ---
+        % --- Portada estilo tesis (título entre líneas horizontales) ---
         \makeatletter
         \renewcommand{\maketitle}{%
           \begin{titlepage}
             \centering
-            \vspace*{3.5cm}
+            \vspace*{4cm}
 
-            {\Huge\scshape \@title\par}
-            \vspace{1.2cm}
+            \hrule
+            \vspace{1cm}
 
+            {\Huge\bfseries \@title\par}
             \ifx\@subtitle\@empty\else
+              \vspace{0.5cm}
               {\Large\itshape \@subtitle\par}
             \fi
-            \vspace{3.5cm}
+            \vspace{1cm}
+            \hrule
 
-            {\large\textbf{\@author}\par}
-            \vspace{0.8cm}
+            \vspace{3cm}
 
-            {\normalsize\textsc{Universidad de Granada}\par}
-            \vspace{0.2cm}
-            {\normalsize\itshape Facultad de Ciencias Económicas y Empresariales\par}
-            \vspace{1.5cm}
+            {\large\scshape \@author\par}
 
-            {\large\@date\par}
+            \vspace{2cm}
+
+            {\normalsize Recurso educativo abierto publicado por la\\[0.3em]
+                         Facultad de Ciencias Económicas y Empresariales,\\[0.3em]
+                         \textsc{Universidad de Granada}\par}
+
+            \vspace{3cm}
+
+            {\large\scshape \@date\par}
 
             \vfill
 

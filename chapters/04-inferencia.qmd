@@ -22,7 +22,7 @@ Vimos `IQ` brevemente en el Capítulo 3 como candidato a *proxy* de la habilidad
 
 ## 4.1 De la estimación a la inferencia
 
-Los Capítulos 2 y 3 produjeron **estimaciones puntuales** $\hat{\beta}_j$ a partir de una muestra. Estos números son aleatorios: una muestra distinta habría dado números distintos. La cuestión de la inferencia es si lo que aprendimos de *nuestra* muestra nos permite decir algo creíble sobre el parámetro poblacional desconocido $\beta_j$.
+`\lettrine[lines=3]{L}{os}`{=latex} Capítulos 2 y 3 produjeron **estimaciones puntuales** $\hat{\beta}_j$ a partir de una muestra. Estos números son aleatorios: una muestra distinta habría dado números distintos. La cuestión de la inferencia es si lo que aprendimos de *nuestra* muestra nos permite decir algo creíble sobre el parámetro poblacional desconocido $\beta_j$.
 
 La inferencia estadística proporciona dos herramientas complementarias [@wooldridge2020]:
 

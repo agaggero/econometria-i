@@ -22,7 +22,7 @@ Imaginemos a un analista de marketing que regresa las ventas trimestrales sobre 
 
 ## 8.1 Contexto: del corte transversal a la serie temporal
 
-En los capítulos 1-7 cada observación era un **individuo** (un trabajador, una empresa, un hogar, una provincia) muestreado en un único momento del tiempo. Indexábamos las observaciones por $i = 1,\dots,n$. Las series temporales son distintas: hay una sola unidad —un país, una empresa, un mercado— observada repetidamente a lo largo de períodos discretos. Sustituimos el índice $i$ por $t = 1,\dots,n$ y el modelo poblacional se convierte en
+`\lettrine[lines=3]{E}{n}`{=latex} los capítulos 1-7 cada observación era un **individuo** (un trabajador, una empresa, un hogar, una provincia) muestreado en un único momento del tiempo. Indexábamos las observaciones por $i = 1,\dots,n$. Las series temporales son distintas: hay una sola unidad —un país, una empresa, un mercado— observada repetidamente a lo largo de períodos discretos. Sustituimos el índice $i$ por $t = 1,\dots,n$ y el modelo poblacional se convierte en
 
 $$
 y_t = \beta_0 + \beta_1 x_{1t} + \beta_2 x_{2t} + \cdots + \beta_k x_{kt} + u_t.
